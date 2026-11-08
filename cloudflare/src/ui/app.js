@@ -109,7 +109,7 @@ class PlacesTrackerClient {
     };
     this.activityLog = [entry, ...(this.activityLog || [])].slice(0, 25);
     this.saveLocalActivityLog();
-    if (this.activeSection === 'csv') {
+    if (this.activeSection === 'csv' || this.activeSection === 'gemini') {
       this.renderRecentUpdatesList();
     }
   }
@@ -502,6 +502,7 @@ class PlacesTrackerClient {
       statistics: 'view-statistics',
       settings: 'view-settings',
       csv: 'view-csv',
+      gemini: 'view-gemini',
     };
 
     Object.entries(viewMap).forEach(([k, id]) => {
@@ -526,6 +527,7 @@ class PlacesTrackerClient {
           statistics: 'Statistics',
           settings: 'Settings',
           csv: 'Import / Export CSV',
+          gemini: 'Gemini AI Logger',
         };
         titleEl.textContent = secTitles[sec] || 'PlacesTracker';
       }
@@ -549,6 +551,8 @@ class PlacesTrackerClient {
       this.syncColorIndicators();
     } else if (sec === 'csv') {
       this.renderCsvPage();
+    } else if (sec === 'gemini') {
+      this.renderGeminiPage();
     }
   }
 
@@ -784,6 +788,8 @@ class PlacesTrackerClient {
     this.recomputeAndRender();
     if (this.activeSection === 'csv') {
       this.renderCsvPage();
+    } else if (this.activeSection === 'gemini') {
+      this.renderGeminiPage();
     }
     if (!this.worldTopo) {
       this.loadVectorMaps();
@@ -801,6 +807,8 @@ class PlacesTrackerClient {
       this.openSection('my_places');
     } else if (tabParam === 'stats' || tabParam === 'statistics') {
       this.openSection('statistics');
+    } else if (tabParam === 'gemini') {
+      this.openSection('gemini');
     }
     const shared = params.get('text') || params.get('title') || params.get('q');
     if (shared) {
@@ -3922,6 +3930,13 @@ class PlacesTrackerClient {
     this.renderRecentUpdatesList();
   }
 
+  renderGeminiPage() {
+    this.renderRecentUpdatesList();
+    if (this.lastGeminiLoggedItems) {
+      this.renderGeminiBatchResults();
+    }
+  }
+
   triggerCsvExport() {
     const tracked = this.places.filter(
       (p) =>
@@ -4157,18 +4172,27 @@ class PlacesTrackerClient {
   }
 
   renderRecentUpdatesList() {
-    const listEl = document.getElementById('csv-recent-updates-list');
-    const countPill = document.getElementById('csv-recent-count-pill');
-    if (!listEl) return;
+    const listEls = [
+      document.getElementById('csv-recent-updates-list'),
+      document.getElementById('gemini-recent-updates-list'),
+    ].filter(Boolean);
+    const countPills = [
+      document.getElementById('csv-recent-count-pill'),
+      document.getElementById('gemini-recent-count-pill'),
+    ].filter(Boolean);
+    if (listEls.length === 0) return;
 
     const log = (this.activityLog || []).slice(0, 25);
-    if (countPill) {
-      countPill.textContent = log.length + ' / 25';
-    }
+    countPills.forEach((pill) => {
+      pill.textContent = log.length + ' / 25';
+    });
 
     if (log.length === 0) {
-      listEl.innerHTML =
-        '<div class="p-5 text-center text-xs text-slate-400">No manual place updates recorded yet. Mark places as Been or Want in Home to see them here!</div>';
+      const emptyHtml =
+        '<div class="p-5 text-center text-xs text-slate-400">No manual place updates recorded yet. Mark places as Been or Want in Home or Gemini Logger to see them here!</div>';
+      listEls.forEach((el) => {
+        el.innerHTML = emptyHtml;
+      });
       return;
     }
 
@@ -4180,7 +4204,7 @@ class PlacesTrackerClient {
       airport: 'Airport',
     };
 
-    listEl.innerHTML = log
+    const rowsHtml = log
       .map((item) => {
         const lbl = item.action_label || 'Updated';
         let badgeCls = 'bg-slate-800 text-slate-300 border-slate-700';
@@ -4233,6 +4257,10 @@ class PlacesTrackerClient {
         );
       })
       .join('');
+
+    listEls.forEach((el) => {
+      el.innerHTML = rowsHtml;
+    });
   }
 
   async askGeminiFromCsvPage() {

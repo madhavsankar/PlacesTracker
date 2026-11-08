@@ -95,12 +95,15 @@
 
         <!-- Section: My Settings -->
         <div class="py-2">
-          <div class="px-4 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">My Settings</div>
-          <button type="button" onclick="app.toggleNavDrawer(false); app.refreshApp()" class="drawer-item w-full px-4 py-2.5 flex items-center gap-3 text-left text-xs font-medium text-slate-200 hover:bg-white/5">
-            <span class="text-base w-5 text-center">☁️</span><span>Backup & Sync Now</span>
+          <div class="px-4 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Tools &amp; Settings</div>
+          <button type="button" onclick="app.openSection('gemini')" class="drawer-item w-full px-4 py-2.5 flex items-center gap-3 text-left text-xs font-medium text-slate-200 hover:bg-white/5">
+            <span class="text-base w-5 text-center">✨</span><span>Gemini AI Logger</span>
           </button>
           <button type="button" onclick="app.openSection('csv')" class="drawer-item w-full px-4 py-2.5 flex items-center gap-3 text-left text-xs font-medium text-slate-200 hover:bg-white/5">
             <span class="text-base w-5 text-center">⇅</span><span>Import / Export CSV</span>
+          </button>
+          <button type="button" onclick="app.toggleNavDrawer(false); app.refreshApp()" class="drawer-item w-full px-4 py-2.5 flex items-center gap-3 text-left text-xs font-medium text-slate-200 hover:bg-white/5">
+            <span class="text-base w-5 text-center">☁️</span><span>Backup &amp; Sync Now</span>
           </button>
           <button type="button" onclick="app.openSection('settings')" class="drawer-item w-full px-4 py-2.5 flex items-center gap-3 text-left text-xs font-medium text-slate-200 hover:bg-white/5">
             <span class="text-base w-5 text-center">⚙️</span><span>Settings</span>
@@ -453,14 +456,30 @@
         <div id="csv-import-stats-box" class="hidden p-3.5 rounded-xl bg-slate-950/90 border border-emerald-500/30 space-y-2.5 text-xs"></div>
       </div>
 
-      <!-- 3. Gemini AI Travel Chat & Bulk Place Logger -->
+      <!-- 3. Last 25 Places Updated (Manual Updates Only — Ignoring CSV Imports) -->
+      <div class="card rounded-2xl p-4 max-w-2xl mx-auto space-y-2.5">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <h2 class="text-sm font-bold text-white flex items-center gap-1.5">🕒 Last 25 Places Updated</h2>
+            <p class="text-[11px] text-slate-400">Recent manual changes in Home (Added as Been, Added as Want, Converted from Want to Been, etc. · Excludes CSV imports)</p>
+          </div>
+          <span id="csv-recent-count-pill" class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-white/10 shrink-0">0</span>
+        </div>
+        <div id="csv-recent-updates-list" class="divide-y divide-white/5 rounded-xl overflow-hidden border border-white/5 bg-slate-950/70"></div>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 9: STANDALONE GEMINI AI TRAVEL LOGGER PAGE                     -->
+    <!-- =================================================================== -->
+    <div id="view-gemini" class="hidden space-y-3">
       <div class="card rounded-2xl p-4 max-w-2xl mx-auto space-y-3 border border-purple-500/25">
         <div>
           <h2 class="text-sm font-bold text-white flex items-center gap-1.5">✨ Gemini AI Travel Logger</h2>
           <p class="text-[11px] text-slate-400">Tell Gemini the cities, national parks, UNESCO sites, landmarks, or airports you visited. Gemini will mark them as Been and show every place logged so you can review or remove any item.</p>
         </div>
 
-        <textarea id="csv-gemini-input" rows="3" placeholder="e.g. I visited Seattle, Space Needle, Mount Rainier National Park, Portland, Multnomah Falls, and San Francisco Golden Gate Bridge..." class="w-full bg-slate-950 text-white border border-slate-700 rounded-xl p-3 text-xs focus:outline-none focus:border-purple-400"></textarea>
+        <textarea id="csv-gemini-input" rows="4" placeholder="e.g. I visited Seattle, Space Needle, Mount Rainier National Park, Portland, Multnomah Falls, and San Francisco Golden Gate Bridge..." class="w-full bg-slate-950 text-white border border-slate-700 rounded-xl p-3 text-xs focus:outline-none focus:border-purple-400"></textarea>
 
         <div class="flex items-center justify-between gap-2">
           <span class="text-[11px] text-slate-500">Extracts cities, parks, UNESCO sites, wonders &amp; airports</span>
@@ -472,16 +491,16 @@
         <div id="csv-gemini-results-box" class="hidden p-3.5 rounded-xl bg-slate-950/90 border border-purple-500/30 space-y-2.5 text-xs"></div>
       </div>
 
-      <!-- 4. Last 25 Places Updated (Manual Updates Only — Ignoring CSV Imports) -->
+      <!-- Recent Updates List for Quick Verification -->
       <div class="card rounded-2xl p-4 max-w-2xl mx-auto space-y-2.5">
         <div class="flex items-center justify-between gap-2">
           <div>
             <h2 class="text-sm font-bold text-white flex items-center gap-1.5">🕒 Last 25 Places Updated</h2>
-            <p class="text-[11px] text-slate-400">Recent manual changes in Home (Added as Been, Added as Want, Converted from Want to Been, etc. · Excludes CSV imports)</p>
+            <p class="text-[11px] text-slate-400">Recent manual &amp; Gemini updates (Excludes CSV imports)</p>
           </div>
-          <span id="csv-recent-count-pill" class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-white/10 shrink-0">0</span>
+          <span id="gemini-recent-count-pill" class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-white/10 shrink-0">0</span>
         </div>
-        <div id="csv-recent-updates-list" class="divide-y divide-white/5 rounded-xl overflow-hidden border border-white/5 bg-slate-950/70"></div>
+        <div id="gemini-recent-updates-list" class="divide-y divide-white/5 rounded-xl overflow-hidden border border-white/5 bg-slate-950/70"></div>
       </div>
     </div>
   </main>

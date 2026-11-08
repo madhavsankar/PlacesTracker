@@ -152,12 +152,13 @@
     <text x="34" y="384" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="8.5">North: Fairbanks, AK · South: Queenstown, NZ</text>
   </g>
 
-  <!-- ================= PHONE 3: GEMINI AI TRAVEL LOGGER & CSV ================= -->
+  <!-- ================= PHONE 3: GEMINI AI TRAVEL LOGGER ================= -->
   <g transform="translate(664, 22)">
     <rect width="288" height="426" rx="26" fill="#0b0f19" stroke="#334155" stroke-width="2"/>
     <!-- Header -->
     <rect x="12" y="14" width="264" height="34" rx="9" fill="#111827" stroke="#1e293b"/>
-    <text x="24" y="35" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">⇅ Import / Export &amp; Gemini AI</text>
+    <text x="24" y="36" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="13" font-weight="bold">☰</text>
+    <text x="46" y="35" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">✨ Gemini AI Logger</text>
 
     <!-- Gemini AI Travel Logger Card -->
     <rect x="12" y="56" width="264" height="354" rx="14" fill="#111827" stroke="#a855f7" stroke-opacity="0.45"/>
@@ -207,3 +208,4 @@
     </g>
   </g>
 </svg>
+

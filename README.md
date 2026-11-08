@@ -19,7 +19,7 @@ An open-source, AI-powered travel tracker and interactive **Scratch & Flag Map**
   - **15** World Wonders
   - **1,524** US, Indian & International Cities, Suburbs & Landmarks + automatic live geocoding for 30,000+ towns worldwide
 - **Derived Parent Region Auto-Propagation:** Parent **Countries** and **States/Provinces** are strictly derived from leaf places — marking any city, National Park, UNESCO site, or World Wonder as `visited` or `bucket_list` automatically updates its parent Country and State/Province.
-- **✨ Gemini AI Travel Logger (Home & CSV Import Page):** Log trips in plain English, dictate via microphone, or use the **Gemini AI Travel Logger** card on the Import/Export CSV page to extract and mark places in bulk with 1-tap **✕ Remove / ↩️ Restore** undo controls and smart suffix/landmark resolution (e.g., *"Space Needle Visitor Centre"* → `Space Needle`).
+- **✨ Gemini AI Travel Logger:** Dedicated **Gemini AI Logger** view in the navigation menu to log trips in plain English and extract & mark cities, National Parks, UNESCO sites, World Wonders, and airports in bulk with 1-tap **✕ Remove / ↩️ Restore** undo controls and smart suffix/landmark resolution (e.g., *"Space Needle Visitor Centre"* → `Space Needle`).
 - **Interactive Vector Maps & 3D Globe:** Switch between **World Map**, **Visited Regional Map** (with long-press country/state drill-down), **3D Interactive Globe**, and **My Places** category checklists.
 - **CSV Import & Export:** 1-click CSV backup (`Append` or `Override` mode) and native compatibility with *Places Been* exports (`lat;lon;country;city;been`).
 
@@ -46,8 +46,8 @@ flowchart LR
     Auth -->|"Verified Email"| Home(["🗺️ Home Map & Viewport List\n(Cities · UNESCO & Sights · Airports)"]):::screenNode
 
     Home -->|"Tap BEEN / WANT\nin Map Viewport"| Propagate{"⚡ Auto-Derive Parents\n(Country & State/Province)"}:::logicNode
-    Home -->|"Open ⇅ Import / Export\n& Gemini Page"| GeminiCard[["✨ Gemini AI Travel Logger\n(Plain-English Bulk Logging)"]]:::aiNode
-    Home -->|"Import / Export\nPlaces Been CSV"| CsvIO[/"📄 CSV Sync\n(Append or Override)"/]:::screenNode
+    Home -->|"Open ✨ Gemini AI Logger\nin Hamburger Menu"| GeminiCard[["✨ Gemini AI Travel Logger\n(Plain-English Bulk Logging)"]]:::aiNode
+    Home -->|"Open ⇅ Import / Export\nPlaces Been CSV"| CsvIO[/"📄 CSV Sync\n(Append or Override)"/]:::screenNode
 
     GeminiCard -->|"Extract Leaf Places\n+ 1-Tap Undo/Remove"| Propagate
     CsvIO --> Propagate
