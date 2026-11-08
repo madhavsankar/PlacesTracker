@@ -82,6 +82,7 @@ flowchart TB
         GeminiAPI["POST /api/gemini\n(Natural-Language Place Extraction)"]:::api
         CsvAPI["GET /api/export.csv\nPOST /api/import.csv"]:::api
         McpAPI["POST /mcp\n(JSON-RPC 2.0 Tools)"]:::api
+        McpAPI --> MarkAPI & StateAPI
     end
 
     GeminiCascade[["🤖 Google Gemini API Cascade\n(/v1beta/models -> gemini-3.8-flash -> fallback)"]]:::ext
@@ -92,15 +93,12 @@ flowchart TB
         LocalCache[("💾 Browser & Android\nLocal Backup Cache")]:::db
     end
 
+    Touchpoints -->|"Bearer <Google_ID_Token>"| AuthGate
+    AuthGate -->|"Verified User"| WorkerAPIs
+
     WebPWA & Android <-->|"Save / Restore Offline"| LocalCache
-    WebPWA & Android -->|"Bearer <Google_ID_Token>"| AuthGate
-    McpClient -->|"Bearer <Google_ID_Token>"| AuthGate
-
-    AuthGate --> StateAPI & MarkAPI & GeminiAPI & CsvAPI & McpAPI
-
     GeminiAPI -->|"Structured Extraction"| GeminiCascade
     GeminiCascade -->|"Resolved Places"| MarkAPI
-    McpAPI --> MarkAPI & StateAPI
 
     StateAPI & MarkAPI & CsvAPI <-->|"Match & Auto-Propagate"| CatalogDB
     StateAPI & MarkAPI & CsvAPI <-->|"REST GET / PATCH"| FirestoreDB
