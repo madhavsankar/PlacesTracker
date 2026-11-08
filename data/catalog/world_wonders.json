@@ -2208,5 +2208,31 @@
     "lng": 88.3468,
     "flag_emoji": "🇮🇳",
     "description": "Iconic cantilever bridge over the Hooghly River connecting Kolkata and Howrah"
+  },
+  {
+    "id": "wonder:wat_pho",
+    "name": "Wat Pho",
+    "category": "world_wonder",
+    "country_code": "TH",
+    "state_code": "",
+    "continent": "Asia",
+    "subregion": "Southeast Asia",
+    "lat": 13.7464,
+    "lng": 100.4936,
+    "flag_emoji": "🇹🇭",
+    "description": "Iconic Temple of the Reclining Buddha in Bangkok, Thailand."
+  },
+  {
+    "id": "wonder:phi_phi_islands",
+    "name": "Phi Phi Islands",
+    "category": "world_wonder",
+    "country_code": "TH",
+    "state_code": "",
+    "continent": "Asia",
+    "subregion": "Southeast Asia",
+    "lat": 7.7333,
+    "lng": 98.7667,
+    "flag_emoji": "🇹🇭",
+    "description": "Iconic limestone archipelago in Krabi Province, Thailand."
   }
 ]

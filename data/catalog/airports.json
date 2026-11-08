@@ -3568,5 +3568,33 @@
     "lng": 113.81,
     "flag_emoji": "✈️",
     "description": "IATA: SZX · Shenzhen, CN"
+  },
+  {
+    "id": "airport:STL",
+    "iata_code": "STL",
+    "name": "STL — St. Louis Lambert International Airport",
+    "category": "airport",
+    "country_code": "US",
+    "state_code": "MO",
+    "continent": "North America",
+    "subregion": "Missouri",
+    "lat": 38.7487,
+    "lng": -90.37,
+    "flag_emoji": "🇺🇸",
+    "description": "Primary international airport serving St. Louis, Missouri."
+  },
+  {
+    "id": "airport:REP",
+    "iata_code": "REP",
+    "name": "REP — Siem Reap International Airport",
+    "category": "airport",
+    "country_code": "KH",
+    "state_code": "",
+    "continent": "Asia",
+    "subregion": "Southeast Asia",
+    "lat": 13.4107,
+    "lng": 103.813,
+    "flag_emoji": "🇰🇭",
+    "description": "International airport serving Siem Reap and Angkor Wat, Cambodia."
   }
 ]
