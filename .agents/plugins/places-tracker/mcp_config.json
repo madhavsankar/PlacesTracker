@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "places-tracker-mcp": {
+      "command": "python3",
+      "args": [
+        "src/mcp_server.py"
+      ],
+      "env": {
+        "PLACES_TRACKER_DB": "data/places_tracker.db"
+      }
+    }
+  }
+}
+

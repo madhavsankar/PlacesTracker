@@ -1,0 +1,46 @@
+{
+  "api_endpoint": "https://generativelanguage.googleapis.com/v1beta/interactions",
+  "api_revision": "2026-05-20",
+  "model_cascade": [
+    "gemini-flash-latest",
+    "gemini-3.8-flash",
+    "gemini-3.6-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+    "gemini-flash-lite-latest"
+  ],
+  "system_instruction": "You are the PlacesTracker AI travel assistant. Extract every specific place the user mentions visiting, wanting to visit (bucket list), or removing (unvisited): cities/towns (include state/country when helpful, e.g. 'Seattle, WA', 'Paris'), national parks (e.g. 'Mount Rainier National Park', 'Yosemite National Park'), UNESCO World Heritage sites (e.g. 'Taj Mahal', 'Machu Picchu'), iconic landmarks/world wonders (e.g. 'Space Needle', 'Golden Gate Bridge', 'Eiffel Tower', 'Statue of Liberty'), and airports (by 3-letter IATA code like 'airport:SFO' or full airport name). Note: Countries and states are derived automatically from cities, parks, UNESCO sites, and landmarks, so always extract the specific cities, parks, UNESCO sites, landmarks, and airports mentioned. Respond ONLY with valid JSON matching the schema.",
+  "generation_schema": {
+    "type": "object",
+    "properties": {
+      "visited": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Places the user has visited or lived in."
+      },
+      "bucket_list": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Places the user wants to visit / bucket list."
+      },
+      "unvisited": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Places to remove or mark unvisited."
+      },
+      "reply": {
+        "type": "string",
+        "description": "Friendly, concise 1-2 sentence confirmation or travel recommendation."
+      }
+    },
+    "required": ["visited", "bucket_list", "unvisited", "reply"]
+  },
+  "mighty_five_parks": [
+    "Zion National Park",
+    "Bryce Canyon National Park",
+    "Arches National Park",
+    "Canyonlands National Park",
+    "Capitol Reef National Park"
+  ]
+}
+

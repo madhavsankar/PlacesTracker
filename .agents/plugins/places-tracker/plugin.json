@@ -1,0 +1,13 @@
+{
+  "name": "places-tracker",
+  "displayName": "PlacesTracker (Places Been AI)",
+  "version": "1.0.0",
+  "description": "Track countries, 50 US states, 63 US National Parks, UNESCO World Heritage Sites, World Wonders, and cities—with automatic parent-country logging, smart trip recommendations, and interactive Scratch & Flag Maps.",
+  "logo": "assets/logo.svg",
+  "suggestedPrompts": [
+    "Log my trips to Japan (Tokyo, Kyoto, Mount Fuji) and Utah (Zion, Bryce Canyon, Arches) and show my Scratch Map",
+    "Show my Places Been travel stats, flag collection, and US National Parks progress",
+    "I'm planning a trip to Italy—what UNESCO sites and National Parks haven't I visited yet?"
+  ]
+}
+

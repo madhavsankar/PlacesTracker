@@ -1,0 +1,39 @@
+{
+  "server_info": {
+    "name": "places-tracker-mcp",
+    "version": "1.0.0"
+  },
+  "default_protocol_version": "2024-11-05",
+  "default_firebase_project_id": "",
+  "kv_key": "user_places_v1",
+  "continents": [
+    "Europe",
+    "North America",
+    "Asia",
+    "South America",
+    "Africa",
+    "Oceania",
+    "Antarctica"
+  ],
+  "categories": [
+    "country",
+    "territory",
+    "us_state",
+    "indian_state",
+    "canadian_province",
+    "national_park",
+    "unesco",
+    "world_wonder",
+    "city",
+    "airport"
+  ],
+  "mcp_resources": [
+    {
+      "uri": "places://stats",
+      "name": "PlacesTracker Summary Statistics",
+      "mimeType": "application/json",
+      "description": "Live summary of visited countries, US states, National Parks, UNESCO sites, and World Wonders."
+    }
+  ]
+}
+

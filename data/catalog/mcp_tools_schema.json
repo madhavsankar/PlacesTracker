@@ -1,0 +1,260 @@
+[
+  {
+    "name": "places_mark",
+    "description": "Mark one or more places (countries, US states, cities, national parks, UNESCO sites, or world wonders) as 'visited', 'bucket_list', or 'unvisited'. Automatically marks the parent country and US state as visited when a child city, park, wonder, or UNESCO site is marked visited.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "places": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of place names, ISO codes, or IDs (e.g. ['Japan', 'Kyoto', 'Mount Fuji', 'Zion National Park'])."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "visited",
+            "bucket_list",
+            "unvisited"
+          ],
+          "default": "visited",
+          "description": "Target status to set."
+        },
+        "is_favorite": {
+          "type": "boolean",
+          "description": "Optional flag to mark or unmark as a personal favorite."
+        },
+        "visit_date": {
+          "type": "string",
+          "description": "Optional date or year of visit (e.g., '2024-05' or '2023')."
+        },
+        "rating": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Optional 1-5 star rating."
+        },
+        "trip_name": {
+          "type": "string",
+          "description": "Optional trip label (e.g., 'Japan Spring 2024')."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional travel notes or diary memories."
+        },
+        "category_hint": {
+          "type": "string",
+          "enum": [
+            "country",
+            "territory",
+            "us_state",
+            "indian_state",
+            "canadian_province",
+            "world_wonder",
+            "national_park",
+            "unesco",
+            "city",
+            "airport"
+          ],
+          "description": "Optional category disambiguation (e.g., if 'New York' means 'us_state' vs 'city' or 'Georgia' means 'country' vs 'us_state')."
+        }
+      },
+      "required": [
+        "places"
+      ]
+    }
+  },
+  {
+    "name": "places_stats",
+    "description": "Get comprehensive 'Places Been' travel statistics: World countries visited %, continent breakdown, collected country flag belt, US 50 states progress, US 63 National Parks progress, New 7 Wonders of the World progress, UNESCO sites, and recently tracked places.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "places_search",
+    "description": "Search the PlacesTracker database of countries, US states, UNESCO World Heritage Sites, National Parks, World Wonders, and cities by keyword, category, visit status, country, or continent.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Search keyword (name, subregion, description)."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "country",
+            "territory",
+            "us_state",
+            "indian_state",
+            "canadian_province",
+            "world_wonder",
+            "national_park",
+            "unesco",
+            "city",
+            "airport"
+          ],
+          "description": "Filter by place category."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "visited",
+            "bucket_list",
+            "unvisited"
+          ],
+          "description": "Filter by user tracking status."
+        },
+        "country_code": {
+          "type": "string",
+          "description": "2-letter ISO country code (e.g., 'US', 'IT', 'JP', 'IN')."
+        },
+        "continent": {
+          "type": "string",
+          "description": "Continent name (e.g., 'Europe', 'Asia', 'North America', 'South America', 'Africa', 'Oceania')."
+        },
+        "favorites_only": {
+          "type": "boolean",
+          "description": "If true, only return places marked as favorite."
+        },
+        "limit": {
+          "type": "integer",
+          "default": 50,
+          "description": "Max results to return."
+        }
+      }
+    }
+  },
+  {
+    "name": "places_recommend",
+    "description": "Recommend unvisited UNESCO World Heritage Sites, National Parks, World Wonders, and major cities for a given destination country (ISO-2 or name) or continent, prioritizing bucket-list items.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "destination": {
+          "type": "string",
+          "description": "Country name, 2-letter ISO code (e.g., 'Italy' or 'IT'), US state, or continent (e.g., 'Europe')."
+        }
+      },
+      "required": [
+        "destination"
+      ]
+    }
+  },
+  {
+    "name": "places_add_custom",
+    "description": "Add a custom place (e.g., a town, monument, regional park, UNESCO site, or island not yet in the seed catalog) and optionally mark it as visited or on the bucket list.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the place."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "city",
+            "airport",
+            "national_park",
+            "unesco",
+            "world_wonder",
+            "us_state",
+            "indian_state",
+            "canadian_province",
+            "territory",
+            "country"
+          ],
+          "default": "city"
+        },
+        "country_code": {
+          "type": "string",
+          "description": "2-letter ISO country code (e.g. 'FR', 'US', 'JP')."
+        },
+        "state_code": {
+          "type": "string",
+          "description": "Optional 2-letter US state code or region."
+        },
+        "lat": {
+          "type": "number",
+          "description": "Latitude in decimal degrees."
+        },
+        "lng": {
+          "type": "number",
+          "description": "Longitude in decimal degrees."
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description of the place."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "visited",
+            "bucket_list",
+            "unvisited"
+          ],
+          "default": "visited"
+        },
+        "is_favorite": {
+          "type": "boolean",
+          "default": false
+        },
+        "visit_date": {
+          "type": "string",
+          "description": "Optional visit date."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional travel notes."
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "country_code"
+      ]
+    }
+  },
+  {
+    "name": "places_render_dashboard",
+    "description": "Generate an interactive HTML Scratch Map, Flag Map, US 50 States Cartogram, and Travel Dashboard reflecting the user's current database state. Writes to output_path and returns summary details.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "output_path": {
+          "type": "string",
+          "description": "Optional absolute file path where the HTML dashboard should be written."
+        }
+      }
+    }
+  },
+  {
+    "name": "places_csv",
+    "description": "Export user travel history to CSV or import places from CSV text (compatible with Places Been).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "export",
+            "import"
+          ],
+          "description": "'export' returns CSV string; 'import' ingests csv_text."
+        },
+        "csv_text": {
+          "type": "string",
+          "description": "CSV content to import when action='import'."
+        }
+      },
+      "required": [
+        "action"
+      ]
+    }
+  }
+]

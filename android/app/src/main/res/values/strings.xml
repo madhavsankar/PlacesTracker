@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">PlacesTracker</string>
+    <string name="share_with_gemini_label">Log Places with Gemini</string>
+    <string name="shortcut_gemini_short">Tell Gemini</string>
+    <string name="shortcut_gemini_long">Log visited places with Gemini AI</string>
+    <string name="shortcut_us_short">50 US States</string>
+    <string name="shortcut_us_long">Open 50 US States Scratch Map</string>
+</resources>
+

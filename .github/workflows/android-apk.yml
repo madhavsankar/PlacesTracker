@@ -1,0 +1,92 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle 8.7
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.7'
+
+      - name: Build Signed Release or Debug APK
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          PLACES_TRACKER_URL: ${{ secrets.PLACES_TRACKER_URL }}
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s\n' "$GOOGLE_SERVICES_JSON" > app/google-services.json
+          fi
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/release-keystore.jks
+            export KEYSTORE_FILE="release-keystore.jks"
+            export KEY_ALIAS="${KEY_ALIAS:-upload}"
+            export KEY_PASSWORD="${KEY_PASSWORD:-$KEYSTORE_PASSWORD}"
+            GRADLE_TASK="assembleRelease"
+          else
+            GRADLE_TASK="assembleDebug"
+          fi
+          for attempt in 1 2 3; do
+            gradle $GRADLE_TASK --no-daemon && break
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            echo "Gradle build hit transient network/rate-limit error (attempt $attempt); retrying in 10s..."
+            sleep 10
+          done
+          mkdir -p dist
+          if ls app/build/outputs/apk/release/*.apk >/dev/null 2>&1; then
+            cp app/build/outputs/apk/release/*.apk dist/PlacesTracker.apk
+          elif ls app/build/outputs/apk/debug/*.apk >/dev/null 2>&1; then
+            cp app/build/outputs/apk/debug/*.apk dist/PlacesTracker.apk
+          fi
+          cp dist/PlacesTracker.apk dist/PlacesTracker-firebase.apk || true
+          if [ -n "$KEYSTORE_PASSWORD" ] && [ -f dist/PlacesTracker.apk ]; then
+            zip -j -P "$KEYSTORE_PASSWORD" dist/PlacesTracker-Protected.zip dist/PlacesTracker.apk
+            rm -f dist/PlacesTracker.apk
+          fi
+
+      - name: Upload APK to Firebase App Distribution
+        if: ${{ env.FIREBASE_ANDROID_APP_ID != '' && env.FIREBASE_SERVICE_ACCOUNT_JSON != '' }}
+        env:
+          FIREBASE_ANDROID_APP_ID: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          FIREBASE_TESTERS: ${{ secrets.FIREBASE_TESTERS }}
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          groups: family
+          testers: ${{ secrets.FIREBASE_TESTERS }}
+          file: android/dist/PlacesTracker-firebase.apk
+          releaseNotes: "PlacesTracker build #${{ github.run_number }} (${{ github.event.head_commit.message }})"
+
+      - name: Clean temporary Firebase APK before artifact upload
+        if: always()
+        run: rm -f android/dist/PlacesTracker-firebase.apk
+
+      - name: Upload PlacesTracker Android APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlacesTracker-Android-APK
+          path: android/dist/*

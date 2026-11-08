@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="globeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="pinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <!-- Outer badge -->
+  <rect x="14" y="14" width="100" height="100" rx="24" fill="#0f172a" stroke="#10b981" stroke-width="3"/>
+  <!-- Globe circle -->
+  <circle cx="64" cy="66" r="34" fill="url(#globeGrad)" opacity="0.2" stroke="#10b981" stroke-width="2.5"/>
+  <!-- Latitude / Longitude lines -->
+  <ellipse cx="64" cy="66" rx="16" ry="34" fill="none" stroke="#10b981" stroke-width="2" opacity="0.7"/>
+  <line x1="30" y1="66" x2="98" y2="66" stroke="#10b981" stroke-width="2" opacity="0.7"/>
+  <path d="M 35 50 Q 64 56 93 50" fill="none" stroke="#10b981" stroke-width="1.8" opacity="0.7"/>
+  <path d="M 35 82 Q 64 76 93 82" fill="none" stroke="#10b981" stroke-width="1.8" opacity="0.7"/>
+  <!-- Location Pin -->
+  <path d="M 80 26 C 72 26 66 32 66 40 C 66 51 80 64 80 64 C 80 64 94 51 94 40 C 94 32 88 26 80 26 Z" fill="url(#pinGrad)" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="80" cy="40" r="5" fill="#ffffff"/>
+</svg>
+

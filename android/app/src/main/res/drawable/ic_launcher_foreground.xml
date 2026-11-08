@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer Globe Circle (Ocean Blue) -->
+    <path
+        android:fillColor="#0EA5E9"
+        android:fillAlpha="0.22"
+        android:strokeColor="#38BDF8"
+        android:strokeWidth="2.4"
+        android:pathData="M52,56m-25,0a25,25 0,1 1,50 0a25,25 0,1 1,-50 0" />
+
+    <!-- Globe Meridian & Equator Lines -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#38BDF8"
+        android:strokeAlpha="0.45"
+        android:strokeWidth="1.5"
+        android:pathData="M27,56h50M52,31v50M31,45h42M31,67h42" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#38BDF8"
+        android:strokeAlpha="0.45"
+        android:strokeWidth="1.5"
+        android:pathData="M52,31 C40,39 40,73 52,81 C64,73 64,39 52,31 Z" />
+
+    <!-- Scratch-Map Continents (Emerald Visited Polygons) -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M35,44 L44,41 L48,47 L45,54 L38,55 L34,49 Z" />
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M43,58 L49,59 L47,71 L42,73 L40,65 Z" />
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M55,42 L67,43 L70,51 L63,57 L55,54 L53,47 Z" />
+    <path
+        android:fillColor="#34D399"
+        android:pathData="M62,62 L70,63 L69,69 L63,70 Z" />
+
+    <!-- Map Pin Marker (Top-Right Accent) -->
+    <path
+        android:fillColor="#F59E0B"
+        android:strokeColor="#0B0F19"
+        android:strokeWidth="1.5"
+        android:pathData="M65,26 C59.5,26 55,30.5 55,36 C55,43.5 65,53 65,53 C65,53 75,43.5 75,36 C75,30.5 70.5,26 65,26 Z" />
+    <path
+        android:fillColor="#0B0F19"
+        android:pathData="M65,36m-3.8,0a3.8,3.8 0,1 1,7.6 0a3.8,3.8 0,1 1,-7.6 0" />
+
+    <!-- Gemini AI 4-Point Sparkle Star (Top-Left Accent) -->
+    <path
+        android:fillColor="#A78BFA"
+        android:pathData="M34,26 L36.2,32.8 L43,35 L36.2,37.2 L34,44 L31.8,37.2 L25,35 L31.8,32.8 Z" />
+</vector>
+

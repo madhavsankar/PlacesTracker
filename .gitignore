@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.pyc
+data/*.db
+data/*.html
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+local.properties
+google-services.json
+android/app/google-services.json
+*.jks
+*.keystore
+*.apk
+
+

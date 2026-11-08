@@ -1,0 +1,6 @@
+name = "places-tracker"
+main = "cloudflare/worker.js"
+compatibility_date = "2025-03-01"
+keep_vars = true
+
+# Configure FIREBASE_PROJECT_ID and GEMINI_API_KEY in Cloudflare Worker Settings -> Variables and Secrets

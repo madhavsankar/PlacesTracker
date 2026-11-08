@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="tell_gemini"
+        android:enabled="true"
+        android:shortcutShortLabel="@string/shortcut_gemini_short"
+        android:shortcutLongLabel="@string/shortcut_gemini_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.placestracker.app"
+            android:targetClass="com.placestracker.app.MainActivity"
+            android:data="placestracker://app?focus=gemini" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="us_states"
+        android:enabled="true"
+        android:shortcutShortLabel="@string/shortcut_us_short"
+        android:shortcutLongLabel="@string/shortcut_us_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.placestracker.app"
+            android:targetClass="com.placestracker.app.MainActivity"
+            android:data="placestracker://app?tab=us" />
+    </shortcut>
+</shortcuts>
+

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B0F19"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="oceanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284C7" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#0EA5E9" stop-opacity="0.15"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="28" fill="url(#bgGrad)" stroke="#334155" stroke-width="2"/>
+  <circle cx="58" cy="64" r="34" fill="url(#oceanGrad)" stroke="#38BDF8" stroke-width="2.5"/>
+  <path d="M24,64 H92 M58,30 V98 M30,49 H86 M30,79 H86" stroke="#38BDF8" stroke-opacity="0.4" stroke-width="1.5" fill="none"/>
+  <path d="M58,30 C41,41 41,87 58,98 C75,87 75,41 58,30 Z" stroke="#38BDF8" stroke-opacity="0.4" stroke-width="1.5" fill="none"/>
+  <path d="M35,48 L47,44 L53,52 L49,61 L39,62 L33,54 Z" fill="#10B981"/>
+  <path d="M46,66 L54,68 L51,84 L45,87 L42,76 Z" fill="#10B981"/>
+  <path d="M62,45 L78,47 L82,57 L73,65 L62,61 L59,52 Z" fill="#10B981"/>
+  <path d="M71,72 L82,74 L80,82 L72,83 Z" fill="#34D399"/>
+  <path d="M78,22 C70.5,22 64.5,28 64.5,35.5 C64.5,45.5 78,58 78,58 C78,58 91.5,45.5 91.5,35.5 C91.5,28 85.5,22 78,22 Z" fill="#F59E0B" stroke="#0B0F19" stroke-width="2"/>
+  <circle cx="78" cy="35.5" r="5" fill="#0B0F19"/>
+  <path d="M33,22 L36,31 L45,34 L36,37 L33,46 L30,37 L21,34 L30,31 Z" fill="#A78BFA"/>
+</svg>
+
