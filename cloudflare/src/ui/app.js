@@ -4180,7 +4180,20 @@ class PlacesTrackerClient {
         }),
         body: csvText,
       });
-      const data = await res.json();
+      const rawText = await res.text();
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch (_) {
+        throw new Error(
+          'Server returned non-JSON response (HTTP ' +
+            res.status +
+            '). Please retry in a few seconds.'
+        );
+      }
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'HTTP ' + res.status);
+      }
       await this.bootstrapState();
 
       const area = document.getElementById('csv-page-paste-area');

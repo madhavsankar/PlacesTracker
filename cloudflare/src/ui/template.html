@@ -37,7 +37,7 @@
     </div>
 
     <div class="flex items-center gap-1.5 shrink-0">
-      <input id="csv-file-input" type="file" accept=".csv,text/csv,text/plain" class="hidden" onchange="app.handleCsvFile(event)" />
+      <input id="csv-file-input" type="file" accept=".csv,.txt,.tsv,text/csv,text/comma-separated-values,application/csv,application/vnd.ms-excel,text/plain,*/*" class="hidden" onchange="app.handleCsvFile(event)" />
       <button type="button" onclick="app.refreshApp()" title="Sync & Refresh App" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-emerald-300 border border-white/10 flex items-center justify-center text-sm">
         ↻
       </button>

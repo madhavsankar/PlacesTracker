@@ -105,32 +105,35 @@ export class StorageRepository {
           }),
         ];
 
-        // Sync individual NoSQL documents inside `user_places/{docId}`
-        for (const item of changedItems) {
-          const baseDocId = String(item.id).replace(/[^a-zA-Z0-9_-]/g, "_");
-          const docId = this.userId === "default" ? baseDocId : `${this.userId}__${baseDocId}`;
-          const docUrl = `${baseUrl}/user_places/${docId}`;
-          if (item.status === "unvisited") {
-            writes.push(fetch(docUrl, { method: "DELETE" }));
-          } else {
-            writes.push(
-              fetch(docUrl, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  fields: {
-                    user_id: { stringValue: this.userId },
-                    place_id: { stringValue: item.id },
-                    name: { stringValue: item.name || "" },
-                    category: { stringValue: item.category || "" },
-                    flag_emoji: { stringValue: item.flag_emoji || "🌍" },
-                    status: { stringValue: item.status || "visited" },
-                    is_favorite: { booleanValue: Boolean(item.is_favorite) },
-                    updated_at: { stringValue: now },
-                  },
-                }),
-              })
-            );
+        // Sync individual NoSQL documents inside `user_places/{docId}` for small incremental updates
+        // (Skip per-item subrequests on bulk CSV imports so we never exceed Cloudflare's 50-subrequest limit)
+        if (changedItems.length <= 15) {
+          for (const item of changedItems) {
+            const baseDocId = String(item.id).replace(/[^a-zA-Z0-9_-]/g, "_");
+            const docId = this.userId === "default" ? baseDocId : `${this.userId}__${baseDocId}`;
+            const docUrl = `${baseUrl}/user_places/${docId}`;
+            if (item.status === "unvisited") {
+              writes.push(fetch(docUrl, { method: "DELETE" }));
+            } else {
+              writes.push(
+                fetch(docUrl, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    fields: {
+                      user_id: { stringValue: this.userId },
+                      place_id: { stringValue: item.id },
+                      name: { stringValue: item.name || "" },
+                      category: { stringValue: item.category || "" },
+                      flag_emoji: { stringValue: item.flag_emoji || "🌍" },
+                      status: { stringValue: item.status || "visited" },
+                      is_favorite: { booleanValue: Boolean(item.is_favorite) },
+                      updated_at: { stringValue: now },
+                    },
+                  }),
+                })
+              );
+            }
           }
         }
 

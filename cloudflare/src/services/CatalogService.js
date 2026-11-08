@@ -818,12 +818,59 @@ export class CatalogService {
     return rows.join("\n");
   }
 
-  _resolveCsvRow(catalog, placeName, cc, lat, lng, userState) {
+  _buildCsvIndex(catalog) {
+    const byId = new Map();
+    const byNormName = new Map();
+    const stateItemsByCountry = { US: [], IN: [], CA: [] };
+    const customIdMap = new Map();
+
+    const addNorm = (key, item) => {
+      if (!key) return;
+      let list = byNormName.get(key);
+      if (!list) {
+        list = [];
+        byNormName.set(key, list);
+      }
+      list.push(item);
+    };
+
+    for (const p of catalog) {
+      byId.set(p.id.toLowerCase(), p);
+      const pNorm = stripAccents(p.name);
+      addNorm(pNorm, p);
+      if (p.name.includes(",")) {
+        const prefixNorm = stripAccents(p.name.split(",")[0]);
+        if (prefixNorm !== pNorm) {
+          addNorm(prefixNorm, p);
+        }
+      }
+      if (p.category === "airport") {
+        if (p.iata_code) {
+          addNorm(p.iata_code.toLowerCase(), p);
+        }
+        if (p.name.includes(" — ")) {
+          addNorm(stripAccents(p.name.split(" — ")[1]), p);
+        }
+      }
+      if (
+        (p.country_code === "US" || p.country_code === "IN" || p.country_code === "CA") &&
+        p.state_code &&
+        Number.isFinite(p.lat)
+      ) {
+        stateItemsByCountry[p.country_code].push(p);
+      }
+    }
+
+    return { byId, byNormName, stateItemsByCountry, customIdMap };
+  }
+
+  _resolveCsvRow(catalog, placeName, cc, lat, lng, userState, csvIndex) {
     const q = String(placeName || "").trim();
     if (!q) return null;
     const ql = q.toLowerCase();
     const qNorm = stripAccents(q);
     const hasCoords = Number.isFinite(lat) && Number.isFinite(lng) && (lat !== 0 || lng !== 0);
+    const idx = csvIndex || this._buildCsvIndex(catalog);
 
     const distSq = (p) => {
       if (!hasCoords || !Number.isFinite(p.lat) || !Number.isFinite(p.lng)) return 999999;
@@ -832,70 +879,67 @@ export class CatalogService {
       return dLat * dLat + dLng * dLng;
     };
 
-    // 1. Check all exact name / diacritic / airport matches, preferring same country_code and closest lat/lon
-    const exactMatches = catalog.filter((p) => {
-      const pLower = p.name.toLowerCase();
-      const pNorm = stripAccents(p.name);
-      if (p.id.toLowerCase() === ql || pLower === ql || pNorm === qNorm) return true;
-      if (pLower.startsWith(ql + ",") || pNorm.startsWith(qNorm + ",")) return true;
-      if (
-        p.category === "airport" &&
-        p.name.includes(" — ") &&
-        stripAccents(p.name.split(" — ")[1]) === qNorm
-      ) {
-        return true;
+    // 1. Direct ID or Alias lookup (O(1))
+    if (idx.byId.has(ql)) {
+      return idx.byId.get(ql);
+    }
+    const aliasId = ALIASES[ql] || ALIASES[qNorm];
+    if (aliasId && idx.byId.has(aliasId.toLowerCase())) {
+      const aliased = idx.byId.get(aliasId.toLowerCase());
+      if (!cc || !hasCoords || aliased.country_code === cc || distSq(aliased) < 25) {
+        return aliased;
       }
-      return false;
-    });
+    }
 
+    // 2. Indexed exact/prefix/airport name match (O(1))
+    const exactMatches = idx.byNormName.get(qNorm) || [];
     if (exactMatches.length > 0) {
       const ccMatches = cc ? exactMatches.filter((p) => p.country_code === cc) : [];
       const pool = ccMatches.length > 0 ? ccMatches : exactMatches;
-      pool.sort((a, b) => {
+      const sorted = [...pool].sort((a, b) => {
         const aParent = PARENT_CATEGORIES.has(a.category) ? 1 : 0;
         const bParent = PARENT_CATEGORIES.has(b.category) ? 1 : 0;
         if (aParent !== bParent) return aParent - bParent;
         return distSq(a) - distSq(b);
       });
-      const best = pool[0];
-      // If coordinates are provided and the match is in the same country (or within ~5 degrees), return it
+      const best = sorted[0];
       if (!hasCoords || !cc || best.country_code === cc || distSq(best) < 25) {
         return best;
       }
-    }
-
-    // 2. Standard resolvePlace fallback (if it matches the country_code or no country_code was given)
-    const fallback = this.resolvePlace(catalog, cc ? `${q}, ${cc}` : q) || this.resolvePlace(catalog, q);
-    if (fallback && (!cc || fallback.country_code === cc || !hasCoords)) {
-      return fallback;
     }
 
     // 3. If row has explicit lat/lon + country code (Places Been format), create custom entry with inferred state
     if (hasCoords && cc) {
       let stateCode = "";
       let subregion = cc;
-      if (cc === "US" || cc === "IN" || cc === "CA") {
-        const sameCountryWithState = catalog.filter(
-          (p) => p.country_code === cc && p.state_code && Number.isFinite(p.lat)
-        );
-        if (sameCountryWithState.length > 0) {
-          sameCountryWithState.sort((a, b) => distSq(a) - distSq(b));
-          if (distSq(sameCountryWithState[0]) < 16) {
-            stateCode = sameCountryWithState[0].state_code;
-            subregion = sameCountryWithState[0].subregion || stateCode;
+      const stateCandidates = idx.stateItemsByCountry[cc];
+      if (stateCandidates && stateCandidates.length > 0) {
+        let bestStateItem = null;
+        let bestDist = 999999;
+        for (const sp of stateCandidates) {
+          const d = distSq(sp);
+          if (d < bestDist) {
+            bestDist = d;
+            bestStateItem = sp;
           }
+        }
+        if (bestStateItem && bestDist < 16) {
+          stateCode = bestStateItem.state_code;
+          subregion = bestStateItem.subregion || stateCode;
         }
       }
       const slug = `${qNorm}_${stateCode || cc}`
         .replace(/[^a-z0-9]+/g, "_")
         .replace(/^_|_$/g, "");
       const isAirport = /\bairport\b/i.test(q);
-      const isPark = /\b(national park|national monument|state park|wildlife sanctuary|tiger reserve|biosphere reserve)\b/i.test(
-        q
-      );
-      const isSight = /\b(bridge|tower|statue|memorial|monument|temple|palace|fort|cathedral|basilica|castle|museum|observatory|pier|falls|dam)\b/i.test(
-        q
-      );
+      const isPark =
+        /\b(national park|national monument|state park|wildlife sanctuary|tiger reserve|biosphere reserve)\b/i.test(
+          q
+        );
+      const isSight =
+        /\b(bridge|tower|statue|memorial|monument|temple|palace|fort|cathedral|basilica|castle|museum|observatory|pier|falls|dam)\b/i.test(
+          q
+        );
       const cat = isAirport
         ? "airport"
         : isPark
@@ -904,10 +948,10 @@ export class CatalogService {
             ? "world_wonder"
             : "city";
       const pid = `${cat}:${slug}`;
-      const existing = catalog.find((p) => p.id === pid);
+      const existing = idx.byId.get(pid.toLowerCase());
       if (existing) return existing;
 
-      const countryEntry = catalog.find((p) => p.id === `country:${cc}`);
+      const countryEntry = idx.byId.get(`country:${cc.toLowerCase()}`);
       const customItem = {
         id: pid,
         name: q,
@@ -921,18 +965,26 @@ export class CatalogService {
         flag_emoji: isoToFlag(cc),
         description: `${isAirport ? "Airport" : isPark ? "National Park" : isSight ? "Landmark" : "Place"} in ${subregion}, ${cc}`,
       };
-      userState.custom_catalog = (userState.custom_catalog || []).filter((x) => x.id !== pid);
+      if (!idx.customIdMap.has(pid)) {
+        userState.custom_catalog = (userState.custom_catalog || []).filter((x) => x.id !== pid);
+      }
+      idx.customIdMap.set(pid, customItem);
       userState.custom_catalog.push(customItem);
       catalog.push(customItem);
+      idx.byId.set(pid.toLowerCase(), customItem);
       return customItem;
     }
 
+    // 4. Fallback for rows without coordinates
+    const fallback =
+      this.resolvePlace(catalog, cc ? `${q}, ${cc}` : q) || this.resolvePlace(catalog, q);
     return fallback;
   }
 
   async importCsv(csvText, mode = "append") {
     const importMode = mode === "override" ? "override" : "append";
     const lines = String(csvText || "")
+      .replace(/^\uFEFF/, "")
       .trim()
       .split(/\r?\n/)
       .map((l) => l.trim())
@@ -1006,6 +1058,7 @@ export class CatalogService {
     }
 
     const addedMap = new Map();
+    const csvIndex = this._buildCsvIndex(catalog);
 
     for (let i = 1; i < lines.length; i++) {
       const cols = lines[i].split(delimiter).map((c) => c.trim().replace(/^"|"$/g, ""));
@@ -1030,7 +1083,15 @@ export class CatalogService {
         status = "unvisited";
       }
 
-      const resolved = this._resolveCsvRow(catalog, placeName, cc.length === 2 ? cc : "", lat, lng, userState);
+      const resolved = this._resolveCsvRow(
+        catalog,
+        placeName,
+        cc.length === 2 ? cc : "",
+        lat,
+        lng,
+        userState,
+        csvIndex
+      );
       if (!resolved) {
         unresolved.push(placeName);
         continue;

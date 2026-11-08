@@ -231,11 +231,18 @@ export class HttpRouter {
     }
 
     if (request.method === "POST" && url.pathname === "/api/import.csv") {
-      const csvText = await request.text();
-      const mode =
-        url.searchParams.get("mode") || request.headers.get("X-Import-Mode") || "append";
-      const res = await this.catalogService.importCsv(csvText, mode);
-      return this._jsonResponse(res);
+      try {
+        const csvText = await request.text();
+        const mode =
+          url.searchParams.get("mode") || request.headers.get("X-Import-Mode") || "append";
+        const res = await this.catalogService.importCsv(csvText, mode);
+        return this._jsonResponse(res);
+      } catch (err) {
+        return this._jsonResponse(
+          { error: err && err.message ? err.message : "CSV import failed on server" },
+          500
+        );
+      }
     }
 
     if (url.pathname === "/mcp") {
