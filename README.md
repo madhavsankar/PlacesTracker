@@ -27,86 +27,85 @@ An open-source, AI-powered travel tracker and interactive **Scratch & Flag Map**
 
 ---
 
-## High-Level Design (HLD) & Architecture
+## App Screens & Usage Pattern (Critical User Journey)
 
-### 1. System Architecture
+<p align="center">
+  <img src="assets/app_screens.svg" width="100%" alt="PlacesTracker App Screens — Home Map, Regional Drill-Down & Statistics, and Gemini AI Travel Logger" />
+</p>
+
+### 1. App Usage Pattern (CUJ Flow)
+
+```mermaid
+flowchart LR
+    classDef userNode fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ecfdf5,font-weight:bold
+    classDef authNode fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#e0e7ff,font-weight:bold
+    classDef screenNode fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f0f9ff
+    classDef aiNode fill:#3b0764,stroke:#c084fc,stroke-width:2px,color:#faf5ff,font-weight:bold
+    classDef logicNode fill:#451a03,stroke:#f59e0b,stroke-width:2px,color:#fef3c7
+    classDef dbNode fill:#083344,stroke:#22d3ee,stroke-width:2.5px,color:#ecfeff,font-weight:bold
+
+    Start(["👤 Open Web or Android App"]):::userNode --> Auth{{"🔐 Google Sign-In Gate\n(OAuth JWT + Allowlist)"}}:::authNode
+    Auth -->|"Verified Email"| Home(["🗺️ Home Map & Viewport List\n(Cities · UNESCO & Sights · Airports)"]):::screenNode
+
+    Home -->|"Tap BEEN / WANT\nin Map Viewport"| Propagate{"⚡ Auto-Derive Parents\n(Country & State/Province)"}:::logicNode
+    Home -->|"Open ⇅ Import / Export\n& Gemini Page"| GeminiCard[["✨ Gemini AI Travel Logger\n(Plain-English Bulk Logging)"]]:::aiNode
+    Home -->|"Import / Export\nPlaces Been CSV"| CsvIO[/"📄 CSV Sync\n(Append or Override)"/]:::screenNode
+
+    GeminiCard -->|"Extract Leaf Places\n+ 1-Tap Undo/Remove"| Propagate
+    CsvIO --> Propagate
+
+    Propagate -->|"Skip Parent Country\nfor Airport Layovers"| Firestore[("🗄️ Cloud Firestore DB\n(user_state_{userId})")]:::dbNode
+    Firestore --> Views(["🌍 Visited Map · 3D Globe ·\nDonut Stats & Geo Extremes"]):::userNode
+```
+
+---
+
+## High-Level Design (Website & App Major APIs)
 
 ```mermaid
 flowchart TB
-    subgraph Clients["User Touchpoints and Clients"]
-        PWA["Web and Mobile PWA (D3 Vector Scratch and Flag Map)"]
-        AndroidApp["Native Android App (WebView, Share Target, Offline Cache)"]
-        ExternalMCP["External MCP Clients (Gemini CLI, Claude, IDE Agents)"]
+    classDef client fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ecfdf5,font-weight:bold
+    classDef gate fill:#311042,stroke:#e879f9,stroke-width:2px,color:#fdf4ff,font-weight:bold
+    classDef api fill:#0c4a6e,stroke:#38bdf8,stroke-width:2px,color:#f0f9ff
+    classDef ext fill:#3b0764,stroke:#a855f7,stroke-width:2px,color:#f3e8ff,font-weight:bold
+    classDef db fill:#164e63,stroke:#06b6d4,stroke-width:2.5px,color:#ecfeff,font-weight:bold
+
+    subgraph Touchpoints["📱 Client Touchpoints"]
+        WebPWA(["🌐 Web PWA\n(D3 Vector Maps & 3D Globe)"]):::client
+        Android(["🤖 Android App\n(WebView + Share Target)"]):::client
+        McpClient(["🔌 MCP Agent\n(Claude / Gemini CLI)"]):::client
     end
 
-    subgraph Edge["Cloudflare Worker Edge Runtime (cloudflare/worker.js)"]
-        Router["HttpRouter (cloudflare/src/controllers/HttpRouter.js)"]
-        WebView["WebAppView + PlacesTrackerClient (cloudflare/src/ui/)"]
-        GeminiSvc["GeminiAgentService (cloudflare/src/services/GeminiAgentService.js)"]
-        McpSrv["McpRouter JSON-RPC 2.0 (cloudflare/src/mcp/McpRouter.js)"]
-        CatSvc["CatalogService (cloudflare/src/services/CatalogService.js)"]
-        StoreRepo["StorageRepository (cloudflare/src/repositories/StorageRepository.js)"]
-        StaticData["Modular JSON Catalog 2,398+ Places (data/catalog/*.json)"]
+    AuthGate{{"🔐 Google OAuth JWT Verifier\n(oauth2.googleapis.com/tokeninfo + ALLOWED_EMAILS)"}}:::gate
+
+    subgraph WorkerAPIs["⚡ Cloudflare Worker Major APIs"]
+        StateAPI["GET /api/state\n(Load Merged Catalog & Stats)"]:::api
+        MarkAPI["POST /api/mark\n(Toggle Leaf Place + Derive Parents)"]:::api
+        GeminiAPI["POST /api/gemini\n(Natural-Language Place Extraction)"]:::api
+        CsvAPI["GET /api/export.csv\nPOST /api/import.csv"]:::api
+        McpAPI["POST /mcp\n(JSON-RPC 2.0 Tools)"]:::api
     end
 
-    subgraph AI["Google Gemini Interactions API (v1beta/interactions)"]
-        G1["Stage 1: gemini-3.8-flash"]
-        G2["Stage 2: gemini-3.5-flash-lite"]
-        G3["Stage 3: gemini-3.1-flash-lite"]
-        G4["Stage 4: Local Catalog and Alias NLP Parser"]
-        G1 -->|"HTTP 503 Failover"| G2
-        G2 -->|"HTTP 503 Failover"| G3
-        G3 -->|"HTTP 503 Failover"| G4
+    GeminiCascade[["🤖 Google Gemini API Cascade\n(/v1beta/models -> gemini-3.8-flash -> fallback)"]]:::ext
+
+    subgraph Storage["🗄️ Persistence & Catalog Layer"]
+        CatalogDB[("📚 Static Place Catalog\n(2,398+ Places & 48k Cities)")]:::db
+        FirestoreDB[("🔥 Firebase Cloud Firestore\n(places_tracker/user_state_{userId})")]:::db
+        LocalCache[("💾 Browser & Android\nLocal Backup Cache")]:::db
     end
 
-    subgraph Database["Firebase Cloud Firestore NoSQL DB"]
-        DocState["Document: places_tracker/user_state_{userId} (Per-User Snapshot)"]
-        ColPlaces["Collection: user_places/{userId}__{docId} (Per-Place Documents)"]
-    end
+    WebPWA & Android <-->|"Save / Restore Offline"| LocalCache
+    WebPWA & Android -->|"Bearer <Google_ID_Token>"| AuthGate
+    McpClient -->|"Bearer <Google_ID_Token>"| AuthGate
 
-    PWA -->|"GET / , GET /api/state , POST /api/mark , POST /api/gemini"| Router
-    AndroidApp -->|"ACTION_SEND (?text=...) + Offline Cache"| Router
-    ExternalMCP -->|"POST /mcp (JSON-RPC 2.0)"| Router
+    AuthGate --> StateAPI & MarkAPI & GeminiAPI & CsvAPI & McpAPI
 
-    Router --> WebView
-    Router -->|"/api/gemini , /api/gemini-vision"| GeminiSvc
-    Router -->|"/mcp"| McpSrv
-    Router -->|"/api/state , /api/mark , /api/export.csv , /api/import.csv"| CatSvc
+    GeminiAPI -->|"Structured Extraction"| GeminiCascade
+    GeminiCascade -->|"Resolved Places"| MarkAPI
+    McpAPI --> MarkAPI & StateAPI
 
-    GeminiSvc -->|"Structured JSON Extraction"| G1
-    GeminiSvc -->|"markPlaces()"| CatSvc
-    McpSrv -->|"tools/list and tools/call"| CatSvc
-
-    CatSvc -->|"Read Catalog and Aliases"| StaticData
-    CatSvc -->|"loadUserState() / saveUserState()"| StoreRepo
-    StoreRepo <-->|"REST PATCH / GET"| DocState
-    StoreRepo <-->|"REST PATCH"| ColPlaces
-```
-
-### 2. End-to-End Request & Smart Auto-Propagation Sequence
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant UI as PlacesTrackerClient (Web / Android)
-    participant Router as HttpRouter
-    participant Gemini as GeminiAgentService
-    participant Catalog as CatalogService
-    participant DB as StorageRepository (Firestore)
-
-    User->>UI: "Visited Kyoto, Zion National Park, and flew through DOH"
-    UI->>Router: POST /api/gemini (X-User-Id: user_xxxx)
-    Router->>Gemini: processPrompt(text)
-    Gemini->>Gemini: Call v1beta/interactions (gemini-3.8-flash)
-    Gemini-->>Catalog: markPlaces(["Kyoto", "Zion National Park", "DOH"], status="visited")
-    Catalog->>Catalog: Resolve places + strip diacritics + geocode if new town
-    Catalog->>Catalog: Auto-propagate parents: Japan (JP), Utah (UT), United States (US)
-    Catalog->>Catalog: Skip parent country auto-propagation for airport layover (DOH)
-    Catalog->>DB: saveUserState(userState, updated + autoPropagated)
-    DB-->>Catalog: Persist to Firestore (user_state_{userId})
-    Catalog-->>Router: Return { updated, auto_propagated, reply }
-    Router-->>UI: JSON response
-    UI->>UI: Re-render World Scratch/Flag Map, 50-States Map & KPI Counters
+    StateAPI & MarkAPI & CsvAPI <-->|"Match & Auto-Propagate"| CatalogDB
+    StateAPI & MarkAPI & CsvAPI <-->|"REST GET / PATCH"| FirestoreDB
 ```
 
 ---

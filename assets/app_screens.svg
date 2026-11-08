@@ -1,0 +1,209 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 470" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#070b14"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="gemGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="980" height="470" rx="20" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="1.5"/>
+
+  <!-- ================= PHONE 1: HOME MAP & VIEWPORT LIST ================= -->
+  <g transform="translate(28, 22)">
+    <rect width="288" height="426" rx="26" fill="#0b0f19" stroke="#334155" stroke-width="2"/>
+    <!-- Top Header -->
+    <rect x="12" y="14" width="264" height="34" rx="9" fill="#111827" stroke="#1e293b"/>
+    <text x="24" y="36" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="13" font-weight="bold">☰</text>
+    <text x="46" y="35" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">Cities</text>
+    <circle cx="86" cy="31" r="3.5" fill="#10b981"/>
+    <text x="95" y="35" fill="#64748b" font-family="system-ui, sans-serif" font-size="9">Synced · Google</text>
+    <text x="252" y="35" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="12">⚙️</text>
+
+    <!-- Search Bar -->
+    <rect x="12" y="56" width="264" height="26" rx="13" fill="#111827" stroke="#1e293b"/>
+    <text x="24" y="73" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">🔍 Search cities, parks, UNESCO, wonders...</text>
+
+    <!-- 3-Tab Category Bar -->
+    <rect x="12" y="90" width="264" height="28" rx="8" fill="#111827" stroke="#1e293b"/>
+    <rect x="13" y="91" width="87" height="26" rx="7" fill="#064e3b" opacity="0.55"/>
+    <line x1="14" y1="117" x2="99" y2="117" stroke="#10b981" stroke-width="2"/>
+    <text x="24" y="108" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="9.5" font-weight="bold">🏙️ Cities 142</text>
+    <text x="108" y="108" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9.5">🏛️ Sights 38</text>
+    <text x="198" y="108" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9.5">✈️ Airports 19</text>
+
+    <!-- Interactive Map Viewport -->
+    <rect x="12" y="125" width="264" height="125" rx="10" fill="#0f2942" stroke="#1e293b"/>
+    <path d="M 25 160 Q 70 140 120 165 T 215 155 L 255 185 L 240 230 L 40 235 Z" fill="#1e3a5f" stroke="#334155" stroke-width="1"/>
+    <circle cx="78" cy="172" r="6" fill="#10b981" stroke="#ffffff" stroke-width="1.5"/>
+    <circle cx="134" cy="188" r="6" fill="#10b981" stroke="#ffffff" stroke-width="1.5"/>
+    <circle cx="182" cy="166" r="6" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
+    <circle cx="212" cy="204" r="5" fill="#64748b" stroke="#ffffff" stroke-width="1"/>
+    <rect x="246" y="133" width="22" height="22" rx="5" fill="#ffffff"/>
+    <text x="252" y="148" fill="#1e293b" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">⌖</text>
+
+    <!-- Viewport Filter Header -->
+    <rect x="12" y="256" width="264" height="24" fill="#064e3b" opacity="0.45"/>
+    <text x="20" y="272" fill="#6ee7b7" font-family="system-ui, sans-serif" font-size="9.5" font-weight="bold">🎛️ In Map View (24)</text>
+    <text x="202" y="272" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">BEEN   WANT</text>
+
+    <!-- Place Rows -->
+    <g transform="translate(12, 284)">
+      <rect width="264" height="38" rx="7" fill="#111827"/>
+      <text x="10" y="17" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10.5" font-weight="bold">🇺🇸 Seattle</text>
+      <text x="10" y="30" fill="#64748b" font-family="system-ui, sans-serif" font-size="8.5">Washington · United States</text>
+      <rect x="190" y="8" width="30" height="22" rx="6" fill="#10b981"/>
+      <text x="201" y="23" fill="#052e16" font-family="system-ui, sans-serif" font-size="11" font-weight="bold">✓</text>
+      <rect x="226" y="8" width="30" height="22" rx="6" fill="#1e293b"/>
+      <text x="236" y="23" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">☆</text>
+    </g>
+
+    <g transform="translate(12, 327)">
+      <rect width="264" height="38" rx="7" fill="#111827"/>
+      <text x="10" y="17" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10.5" font-weight="bold">🌲 Mount Rainier NP</text>
+      <text x="10" y="30" fill="#64748b" font-family="system-ui, sans-serif" font-size="8.5">National Park · Auto-marks WA &amp; US</text>
+      <rect x="190" y="8" width="30" height="22" rx="6" fill="#10b981"/>
+      <text x="201" y="23" fill="#052e16" font-family="system-ui, sans-serif" font-size="11" font-weight="bold">✓</text>
+      <rect x="226" y="8" width="30" height="22" rx="6" fill="#1e293b"/>
+      <text x="236" y="23" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10">☆</text>
+    </g>
+
+    <g transform="translate(12, 370)">
+      <rect width="264" height="38" rx="7" fill="#111827"/>
+      <text x="10" y="17" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10.5" font-weight="bold">🏛️ Banff National Park</text>
+      <text x="10" y="30" fill="#64748b" font-family="system-ui, sans-serif" font-size="8.5">Alberta · Canada (Bucket List)</text>
+      <rect x="190" y="8" width="30" height="22" rx="6" fill="#1e293b"/>
+      <text x="201" y="23" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="11">✓</text>
+      <rect x="226" y="8" width="30" height="22" rx="6" fill="#f59e0b"/>
+      <text x="236" y="23" fill="#451a03" font-family="system-ui, sans-serif" font-size="10" font-weight="bold">★</text>
+    </g>
+  </g>
+
+  <!-- ================= PHONE 2: VISITED MAP, 3D GLOBE & STATS ================= -->
+  <g transform="translate(346, 22)">
+    <rect width="288" height="426" rx="26" fill="#0b0f19" stroke="#334155" stroke-width="2"/>
+    <!-- Header -->
+    <rect x="12" y="14" width="264" height="34" rx="9" fill="#111827" stroke="#1e293b"/>
+    <text x="24" y="35" fill="#10b981" font-family="system-ui, sans-serif" font-size="10" font-weight="bold">⬅️ World</text>
+    <text x="86" y="35" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="11.5" font-weight="bold">🇺🇸 United States (28/50)</text>
+
+    <!-- Vector Map Drill-Down -->
+    <rect x="12" y="56" width="264" height="154" rx="12" fill="#060d18" stroke="#1e293b"/>
+    <text x="22" y="74" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9">Long-press country → State &amp; Park drill-down</text>
+    <!-- Stylized US Vector States -->
+    <rect x="28" y="86" width="38" height="24" rx="4" fill="#10b981" stroke="#060d18" stroke-width="1.5"/>
+    <text x="40" y="102" fill="#052e16" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">WA</text>
+    <rect x="28" y="112" width="38" height="24" rx="4" fill="#10b981" stroke="#060d18" stroke-width="1.5"/>
+    <text x="41" y="128" fill="#052e16" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">OR</text>
+    <rect x="28" y="138" width="38" height="32" rx="4" fill="#10b981" stroke="#060d18" stroke-width="1.5"/>
+    <text x="41" y="158" fill="#052e16" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">CA</text>
+    <rect x="68" y="86" width="42" height="28" rx="4" fill="#f59e0b" stroke="#060d18" stroke-width="1.5"/>
+    <text x="82" y="104" fill="#451a03" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">MT</text>
+    <rect x="68" y="116" width="42" height="26" rx="4" fill="#10b981" stroke="#060d18" stroke-width="1.5"/>
+    <text x="82" y="133" fill="#052e16" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">UT</text>
+    <rect x="68" y="144" width="42" height="26" rx="4" fill="#10b981" stroke="#060d18" stroke-width="1.5"/>
+    <text x="82" y="161" fill="#052e16" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">AZ</text>
+    <rect x="112" y="96" width="46" height="32" rx="4" fill="#1e293b" stroke="#060d18" stroke-width="1.5"/>
+    <text x="128" y="116" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="8.5">CO</text>
+    <rect x="112" y="130" width="52" height="40" rx="4" fill="#10b981" stroke="#060d18" stroke-width="1.5"/>
+    <text x="131" y="154" fill="#052e16" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">TX</text>
+    <rect x="166" y="102" width="44" height="30" rx="4" fill="#10b981" stroke="#060d18" stroke-width="1.5"/>
+    <text x="182" y="121" fill="#052e16" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">IL</text>
+    <rect x="212" y="90" width="44" height="28" rx="4" fill="#10b981" stroke="#060d18" stroke-width="1.5"/>
+    <text x="227" y="108" fill="#052e16" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">NY</text>
+    <rect x="206" y="142" width="48" height="28" rx="4" fill="#10b981" stroke="#060d18" stroke-width="1.5"/>
+    <text x="223" y="160" fill="#052e16" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">FL</text>
+
+    <!-- Legend -->
+    <text x="24" y="198" fill="#10b981" font-family="system-ui, sans-serif" font-size="9" font-weight="bold">● Derived Visited</text>
+    <text x="118" y="198" fill="#f59e0b" font-family="system-ui, sans-serif" font-size="9" font-weight="bold">● Derived Dream</text>
+
+    <!-- Statistics Donuts Card -->
+    <rect x="12" y="218" width="264" height="192" rx="12" fill="#111827" stroke="#1e293b"/>
+    <text x="86" y="238" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="11" font-weight="bold">📊 Travel Statistics</text>
+
+    <!-- 3 Donut Rings -->
+    <g transform="translate(54, 288)">
+      <circle r="28" fill="none" stroke="#1e293b" stroke-width="6"/>
+      <circle r="28" fill="none" stroke="#10b981" stroke-width="6" stroke-dasharray="65 175" stroke-linecap="round" transform="rotate(-90)"/>
+      <text x="0" y="3" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10" font-weight="bold">18/195</text>
+      <text x="0" y="44" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9">Countries</text>
+    </g>
+
+    <g transform="translate(144, 288)">
+      <circle r="28" fill="none" stroke="#1e293b" stroke-width="6"/>
+      <circle r="28" fill="none" stroke="#10b981" stroke-width="6" stroke-dasharray="98 175" stroke-linecap="round" transform="rotate(-90)"/>
+      <text x="0" y="3" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10" font-weight="bold">28/50</text>
+      <text x="0" y="44" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9">US States</text>
+    </g>
+
+    <g transform="translate(234, 288)">
+      <circle r="28" fill="none" stroke="#1e293b" stroke-width="6"/>
+      <circle r="28" fill="none" stroke="#f59e0b" stroke-width="6" stroke-dasharray="55 175" stroke-linecap="round" transform="rotate(-90)"/>
+      <text x="0" y="3" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10" font-weight="bold">21/63</text>
+      <text x="0" y="44" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9">US Parks</text>
+    </g>
+
+    <rect x="24" y="350" width="240" height="46" rx="8" fill="#0b0f19" stroke="#1e293b"/>
+    <text x="34" y="368" fill="#6ee7b7" font-family="system-ui, sans-serif" font-size="9.5" font-weight="bold">🧭 Geo Extremes (Auto-Computed)</text>
+    <text x="34" y="384" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="8.5">North: Fairbanks, AK · South: Queenstown, NZ</text>
+  </g>
+
+  <!-- ================= PHONE 3: GEMINI AI TRAVEL LOGGER & CSV ================= -->
+  <g transform="translate(664, 22)">
+    <rect width="288" height="426" rx="26" fill="#0b0f19" stroke="#334155" stroke-width="2"/>
+    <!-- Header -->
+    <rect x="12" y="14" width="264" height="34" rx="9" fill="#111827" stroke="#1e293b"/>
+    <text x="24" y="35" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">⇅ Import / Export &amp; Gemini AI</text>
+
+    <!-- Gemini AI Travel Logger Card -->
+    <rect x="12" y="56" width="264" height="354" rx="14" fill="#111827" stroke="#a855f7" stroke-opacity="0.45"/>
+    <text x="24" y="78" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="11.5" font-weight="bold">✨ Gemini AI Travel Logger</text>
+    <text x="24" y="93" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="8.5">Type cities, parks, UNESCO sites, wonders or airports:</text>
+
+    <!-- Prompt Box -->
+    <rect x="22" y="102" width="244" height="54" rx="9" fill="#070b14" stroke="#334155"/>
+    <text x="30" y="119" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="9">"I visited Seattle, Space Needle Visitor</text>
+    <text x="30" y="133" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="9">Centre, Mount Rainier, and Golden Gate</text>
+    <text x="30" y="147" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="9">Bridge in San Francisco"</text>
+
+    <!-- Action Button -->
+    <rect x="126" y="164" width="140" height="26" rx="8" fill="url(#gemGrad)"/>
+    <text x="140" y="180" fill="#052e16" font-family="system-ui, sans-serif" font-size="9.5" font-weight="bold">✨ Log Places with Gemini</text>
+
+    <!-- Newly Changed Places List (With Undo/Remove) -->
+    <rect x="22" y="198" width="244" height="198" rx="10" fill="#070b14" stroke="#a855f7" stroke-opacity="0.35"/>
+    <text x="32" y="216" fill="#6ee7b7" font-family="system-ui, sans-serif" font-size="9.5" font-weight="bold">✓ 3 New Places Marked as Been</text>
+    <text x="32" y="229" fill="#64748b" font-family="system-ui, sans-serif" font-size="8">1 already marked hidden · Parent US/WA/CA updated</text>
+
+    <!-- Logged Row 1 -->
+    <g transform="translate(30, 238)">
+      <rect width="228" height="42" rx="7" fill="#111827"/>
+      <text x="10" y="17" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="9.5" font-weight="bold">✨ Space Needle</text>
+      <text x="10" y="31" fill="#10b981" font-family="system-ui, sans-serif" font-size="8">World Wonder · Added as Been</text>
+      <rect x="166" y="10" width="54" height="22" rx="6" fill="#4c0519" stroke="#f43f5e" stroke-opacity="0.4"/>
+      <text x="173" y="24" fill="#fda4af" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">✕ Remove</text>
+    </g>
+
+    <!-- Logged Row 2 -->
+    <g transform="translate(30, 286)">
+      <rect width="228" height="42" rx="7" fill="#111827"/>
+      <text x="10" y="17" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="9.5" font-weight="bold">🌲 Mount Rainier NP</text>
+      <text x="10" y="31" fill="#10b981" font-family="system-ui, sans-serif" font-size="8">National Park · Added as Been</text>
+      <rect x="166" y="10" width="54" height="22" rx="6" fill="#4c0519" stroke="#f43f5e" stroke-opacity="0.4"/>
+      <text x="173" y="24" fill="#fda4af" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">✕ Remove</text>
+    </g>
+
+    <!-- Logged Row 3 -->
+    <g transform="translate(30, 334)">
+      <rect width="228" height="42" rx="7" fill="#111827"/>
+      <text x="10" y="17" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="9.5" font-weight="bold">✨ Golden Gate Bridge</text>
+      <text x="10" y="31" fill="#10b981" font-family="system-ui, sans-serif" font-size="8">World Wonder · Added as Been</text>
+      <rect x="166" y="10" width="54" height="22" rx="6" fill="#4c0519" stroke="#f43f5e" stroke-opacity="0.4"/>
+      <text x="173" y="24" fill="#fda4af" font-family="system-ui, sans-serif" font-size="8.5" font-weight="bold">✕ Remove</text>
+    </g>
+  </g>
+</svg>
