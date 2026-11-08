@@ -818,38 +818,92 @@ export class CatalogService {
     return rows.join("\n");
   }
 
+  _normalizeLookupKey(str) {
+    return stripAccents(str)
+      .replace(/['’`.]/g, "")
+      .replace(/[-–—/]/g, " ")
+      .replace(/\bintl\b/g, "international airport")
+      .replace(/\binternational\s+airport\s+airport\b/g, "international airport")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   _buildCsvIndex(catalog) {
     const byId = new Map();
     const byNormName = new Map();
     const stateItemsByCountry = { US: [], IN: [], CA: [] };
     const customIdMap = new Map();
 
-    const addNorm = (key, item) => {
-      if (!key) return;
-      let list = byNormName.get(key);
-      if (!list) {
-        list = [];
-        byNormName.set(key, list);
+    const addNorm = (rawKey, item) => {
+      if (!rawKey) return;
+      const keys = new Set([stripAccents(rawKey), this._normalizeLookupKey(rawKey)]);
+      for (const key of keys) {
+        if (!key || key.length < 2) continue;
+        let list = byNormName.get(key);
+        if (!list) {
+          list = [];
+          byNormName.set(key, list);
+        }
+        if (!list.includes(item)) {
+          list.push(item);
+        }
       }
-      list.push(item);
     };
 
     for (const p of catalog) {
       byId.set(p.id.toLowerCase(), p);
-      const pNorm = stripAccents(p.name);
-      addNorm(pNorm, p);
-      if (p.name.includes(",")) {
-        const prefixNorm = stripAccents(p.name.split(",")[0]);
-        if (prefixNorm !== pNorm) {
-          addNorm(prefixNorm, p);
+      const rawName = String(p.name || "").trim();
+      addNorm(rawName, p);
+
+      // Index base name before comma (e.g., "Seattle, WA" -> "Seattle")
+      if (rawName.includes(",")) {
+        addNorm(rawName.split(",")[0], p);
+      }
+
+      // Index base name without parenthetical AND alternate name inside parenthetical
+      // (e.g., "Hospet (Hosapete)" -> "Hospet" and "Hosapete", "BKK — Suvarnabhumi Airport (Bangkok)" -> "Suvarnabhumi Airport")
+      if (rawName.includes("(")) {
+        const withoutParens = rawName.replace(/\s*\([^)]*\)/g, "").trim();
+        addNorm(withoutParens, p);
+        if (withoutParens.includes(" — ")) {
+          addNorm(withoutParens.split(" — ")[1], p);
+        }
+        const parenMatch = rawName.match(/\(([^)]+)\)/);
+        if (parenMatch && parenMatch[1] && !parenMatch[1].includes(",")) {
+          addNorm(parenMatch[1], p);
         }
       }
+
+      // Index parts of "&" compound names and hyphenated twin-cities (e.g. "Pimpri-Chinchwad", "Kalyan-Dombivli")
+      if (rawName.includes("&")) {
+        for (const part of rawName.split("&")) {
+          addNorm(part.replace(/,\s*[A-Za-z\s]+$/, "").trim(), p);
+        }
+      }
+      if (p.category === "city" && rawName.includes("-") && !rawName.includes("-by-")) {
+        for (const part of rawName.split(",")[0].split("-")) {
+          if (part.trim().length >= 4) {
+            addNorm(part.trim(), p);
+          }
+        }
+      }
+
+      // Index stripped prefixes ("The ", "Historic City of ", "Ancient City of ", "Sacred City of ")
+      const strippedPrefix = rawName.replace(
+        /^(?:the|historic\s+(?:city|town)\s+of|ancient\s+(?:city|town)\s+of|sacred\s+city\s+of|old\s+town\s+of)\s+/i,
+        ""
+      );
+      if (strippedPrefix !== rawName) {
+        addNorm(strippedPrefix, p);
+      }
+
       if (p.category === "airport") {
         if (p.iata_code) {
           addNorm(p.iata_code.toLowerCase(), p);
         }
-        if (p.name.includes(" — ")) {
-          addNorm(stripAccents(p.name.split(" — ")[1]), p);
+        if (rawName.includes(" — ")) {
+          const afterDash = rawName.split(" — ")[1].replace(/\s*\([^)]*\)/g, "").trim();
+          addNorm(afterDash, p);
         }
       }
       if (
@@ -869,6 +923,7 @@ export class CatalogService {
     if (!q) return null;
     const ql = q.toLowerCase();
     const qNorm = stripAccents(q);
+    const qKey = this._normalizeLookupKey(q);
     const hasCoords = Number.isFinite(lat) && Number.isFinite(lng) && (lat !== 0 || lng !== 0);
     const idx = csvIndex || this._buildCsvIndex(catalog);
 
@@ -883,7 +938,7 @@ export class CatalogService {
     if (idx.byId.has(ql)) {
       return idx.byId.get(ql);
     }
-    const aliasId = ALIASES[ql] || ALIASES[qNorm];
+    const aliasId = ALIASES[ql] || ALIASES[qNorm] || ALIASES[qKey];
     if (aliasId && idx.byId.has(aliasId.toLowerCase())) {
       const aliased = idx.byId.get(aliasId.toLowerCase());
       if (!cc || !hasCoords || aliased.country_code === cc || distSq(aliased) < 25) {
@@ -891,8 +946,8 @@ export class CatalogService {
       }
     }
 
-    // 2. Indexed exact/prefix/airport name match (O(1))
-    const exactMatches = idx.byNormName.get(qNorm) || [];
+    // 2. Indexed exact/prefix/parenthetical/airport name match (O(1))
+    const exactMatches = idx.byNormName.get(qNorm) || idx.byNormName.get(qKey) || [];
     if (exactMatches.length > 0) {
       const ccMatches = cc ? exactMatches.filter((p) => p.country_code === cc) : [];
       const pool = ccMatches.length > 0 ? ccMatches : exactMatches;
