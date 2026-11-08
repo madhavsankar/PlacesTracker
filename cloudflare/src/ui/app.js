@@ -190,6 +190,61 @@ class PlacesTrackerClient {
           const cfgRes = await fetch('/api/auth-config', { cache: 'no-store' });
           const cfg = await cfgRes.json();
           const clientId = cfg.googleClientId || '';
+
+          const completeLogin = (token, emailHint = '') => {
+            const payload = this.decodeJwtPayload(token);
+            const email = String((payload && payload.email) || emailHint || '')
+              .trim()
+              .toLowerCase();
+            if (!token || !email) {
+              if (err) {
+                err.textContent = 'Google Sign-In did not return a valid email token.';
+                err.classList.remove('hidden');
+              }
+              return;
+            }
+            this.googleIdToken = token;
+            this.userEmail = email;
+            this.userId = this.normalizeUserId(this.userEmail);
+            localStorage.setItem('places_google_id_token', this.googleIdToken);
+            localStorage.setItem('places_user_email', this.userEmail);
+            localStorage.setItem('places_user_id', this.userId);
+            this.activityLog = this.loadLocalActivityLog();
+            this.updateUserUI();
+            modal.remove();
+            resolve(this.userId);
+          };
+
+          // 1. Native Android Google Sign-In Bridge (same flow as PackTrack)
+          if (window.PlacesAndroidAuth && typeof window.PlacesAndroidAuth.signIn === 'function') {
+            window.onAndroidGoogleSignInResult = (res) => {
+              if (res && res.error) {
+                if (err) {
+                  err.textContent = res.error;
+                  err.classList.remove('hidden');
+                }
+                return;
+              }
+              if (res && res.idToken) {
+                completeLogin(res.idToken, res.email || '');
+              }
+            };
+            if (btnContainer) {
+              btnContainer.innerHTML =
+                '<button type="button" id="native-google-signin-btn" class="px-6 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-bold text-xs shadow-lg inline-flex items-center gap-2">' +
+                '<span>🔐</span><span>Sign in with Google</span>' +
+                '</button>';
+              const nativeBtn = document.getElementById('native-google-signin-btn');
+              if (nativeBtn) {
+                nativeBtn.onclick = () => {
+                  if (err) err.classList.add('hidden');
+                  window.PlacesAndroidAuth.signIn(clientId);
+                };
+              }
+            }
+            return;
+          }
+
           let tries = 0;
           while (!(window.google && window.google.accounts && window.google.accounts.id) && tries < 40) {
             await new Promise((r) => setTimeout(r, 150));
@@ -206,39 +261,43 @@ class PlacesTrackerClient {
             client_id: clientId,
             callback: (resp) => {
               const token = resp && resp.credential ? resp.credential : '';
-              const payload = this.decodeJwtPayload(token);
-              if (!token || !payload || !payload.email) {
-                if (err) {
-                  err.textContent = 'Google Sign-In did not return a valid email token.';
-                  err.classList.remove('hidden');
-                }
-                return;
-              }
-              this.googleIdToken = token;
-              this.userEmail = String(payload.email).trim().toLowerCase();
-              this.userId = this.normalizeUserId(this.userEmail);
-              localStorage.setItem('places_google_id_token', this.googleIdToken);
-              localStorage.setItem('places_user_email', this.userEmail);
-              localStorage.setItem('places_user_id', this.userId);
-              this.activityLog = this.loadLocalActivityLog();
-              this.updateUserUI();
-              modal.remove();
-              resolve(this.userId);
+              completeLogin(token);
             },
           });
-          if (btnContainer) {
-            btnContainer.innerHTML = '';
-            window.google.accounts.id.renderButton(btnContainer, {
-              theme: 'filled_black',
-              size: 'large',
-              shape: 'pill',
-              text: 'signin_with',
-              width: 260,
-            });
+
+          const isAndroidWebView = /Android/i.test(navigator.userAgent || '');
+          if (isAndroidWebView) {
+            // Avoid rendering the web OAuth popup button on Android WebView (which opens a blocked popup and creates 2 buttons)
+            if (btnContainer) {
+              btnContainer.innerHTML =
+                '<button type="button" id="android-onetap-signin-btn" class="px-6 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-bold text-xs shadow-lg inline-flex items-center gap-2">' +
+                '<span>🔐</span><span>Sign in with Google</span>' +
+                '</button>';
+              const oneTapBtn = document.getElementById('android-onetap-signin-btn');
+              if (oneTapBtn) {
+                oneTapBtn.onclick = () => {
+                  if (err) err.classList.add('hidden');
+                  try {
+                    window.google.accounts.id.prompt();
+                  } catch (_) { }
+                };
+              }
+            }
+            try {
+              window.google.accounts.id.prompt();
+            } catch (_) { }
+          } else {
+            if (btnContainer) {
+              btnContainer.innerHTML = '';
+              window.google.accounts.id.renderButton(btnContainer, {
+                theme: 'filled_black',
+                size: 'large',
+                shape: 'pill',
+                text: 'signin_with',
+                width: 260,
+              });
+            }
           }
-          try {
-            window.google.accounts.id.prompt();
-          } catch (_) { }
         } catch (e) {
           if (err) {
             err.textContent = 'Failed to initialize Google Sign-In.';
@@ -564,6 +623,9 @@ class PlacesTrackerClient {
     localStorage.removeItem('places_user_email');
     localStorage.removeItem('places_user_id');
     try {
+      if (window.PlacesAndroidAuth && typeof window.PlacesAndroidAuth.signOut === 'function') {
+        window.PlacesAndroidAuth.signOut();
+      }
       if (window.google && window.google.accounts && window.google.accounts.id) {
         window.google.accounts.id.disableAutoSelect();
       }

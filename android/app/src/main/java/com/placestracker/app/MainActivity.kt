@@ -13,6 +13,7 @@ import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
+import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -25,8 +26,12 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
+import org.json.JSONObject
 import java.net.URLEncoder
 
 class MainActivity : AppCompatActivity() {
@@ -40,6 +45,74 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private var pendingPermissionRequest: PermissionRequest? = null
     private var fileUploadCallback: ValueCallback<Array<Uri>>? = null
+    private var lastWebClientId: String = ""
+
+    private val googleSignInLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        try {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            val account = task.getResult(ApiException::class.java)
+            val idToken = account?.idToken ?: ""
+            val email = account?.email?.trim()?.lowercase() ?: ""
+            sendAuthResultToWeb(idToken, email, "")
+        } catch (e: ApiException) {
+            if (result.resultCode != Activity.RESULT_CANCELED) {
+                sendAuthResultToWeb(
+                    "",
+                    "",
+                    "Google Sign-In failed (code ${e.statusCode}). Ensure SHA-1 is added in Firebase."
+                )
+            }
+        }
+    }
+
+    private fun sendAuthResultToWeb(idToken: String, email: String, error: String) {
+        val payload = JSONObject().apply {
+            put("idToken", idToken)
+            put("email", email)
+            put("error", error)
+        }.toString()
+        runOnUiThread {
+            if (::webView.isInitialized) {
+                webView.evaluateJavascript(
+                    "if(window.onAndroidGoogleSignInResult) window.onAndroidGoogleSignInResult($payload);",
+                    null
+                )
+            }
+        }
+    }
+
+    inner class AndroidAuthBridge {
+        @JavascriptInterface
+        fun signIn(webClientId: String?) {
+            val cleanClientId = (webClientId ?: "").trim()
+            lastWebClientId = cleanClientId
+            runOnUiThread {
+                val gsoBuilder = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestEmail()
+                if (cleanClientId.isNotEmpty()) {
+                    gsoBuilder.requestIdToken(cleanClientId)
+                }
+                val client = GoogleSignIn.getClient(this@MainActivity, gsoBuilder.build())
+                client.signOut().addOnCompleteListener {
+                    googleSignInLauncher.launch(client.signInIntent)
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun signOut() {
+            runOnUiThread {
+                val gsoBuilder = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestEmail()
+                if (lastWebClientId.isNotEmpty()) {
+                    gsoBuilder.requestIdToken(lastWebClientId)
+                }
+                GoogleSignIn.getClient(this@MainActivity, gsoBuilder.build()).signOut()
+            }
+        }
+    }
 
     private val audioPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -121,6 +194,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         webView.setBackgroundColor(Color.parseColor("#0B0F19"))
+        webView.addJavascriptInterface(AndroidAuthBridge(), "PlacesAndroidAuth")
         android.webkit.CookieManager.getInstance().apply {
             setAcceptCookie(true)
             setAcceptThirdPartyCookies(webView, true)
