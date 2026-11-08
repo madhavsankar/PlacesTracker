@@ -20,9 +20,7 @@ An open-source, AI-powered travel tracker and interactive **Scratch & Flag Map**
   - **1,524** US, Indian & International Cities, Suburbs & Landmarks + automatic live geocoding for 30,000+ towns worldwide
 - **Derived Parent Region Auto-Propagation:** Parent **Countries** and **States/Provinces** are strictly derived from leaf places — marking any city, National Park, UNESCO site, or World Wonder as `visited` or `bucket_list` automatically updates its parent Country and State/Province.
 - **✨ Gemini AI Travel Logger (Home & CSV Import Page):** Log trips in plain English, dictate via microphone, or use the **Gemini AI Travel Logger** card on the Import/Export CSV page to extract and mark places in bulk with 1-tap **✕ Remove / ↩️ Restore** undo controls and smart suffix/landmark resolution (e.g., *"Space Needle Visitor Centre"* → `Space Needle`).
-- **Self-Discovering Gemini Model Cascade:** Dynamically discovers live models via `GET /v1beta/models` (cached 1h), filters out non-text modalities, and ranks general text models (`gemini-flash-latest` → `gemini-3.8-flash` → `gemini-3.6-flash` → `gemini-3.5-flash-lite` → `gemini-3.1-flash-lite` → `gemini-4-argon`) with automatic failover to the local catalog NLP parser.
 - **Interactive Vector Maps & 3D Globe:** Switch between **World Map**, **Visited Regional Map** (with long-press country/state drill-down), **3D Interactive Globe**, and **My Places** category checklists.
-- **Google Sign-In & Email Allowlist Security:** Built-in Google OAuth Sign-In (`GOOGLE_CLIENT_ID`) with server-side JWT verification (`oauth2.googleapis.com/tokeninfo`) and `ALLOWED_EMAILS` allowlist enforcement across `/api/*` and `/mcp`.
 - **CSV Import & Export:** 1-click CSV backup (`Append` or `Override` mode) and native compatibility with *Places Been* exports (`lat;lon;country;city;been`).
 
 ---
