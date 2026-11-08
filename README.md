@@ -10,14 +10,14 @@ An open-source, AI-powered travel tracker and interactive **Scratch & Flag Map**
 
 ## Features
 
-- **2,398+ Pre-Seeded Places (+ Live Town Geocoding):**
+- **5,672+ Pre-Seeded Places (+ Live Town Geocoding):**
   - **195** Countries + **20** Territories & Dependencies
   - **51** US States + D.C., **36** Indian States & UTs, **13** Canadian Provinces & Territories
-  - **252** Commercial & Regional Airports (logging airport layovers does **not** auto-mark the parent country/state)
+  - **837** Commercial & Regional Airports — **100% of US commercial passenger airports (655)** across all 50 states + D.C. & territories, plus India & international hubs (logging airport layovers does **not** auto-mark the parent country/state)
   - **168** National Parks, National Monuments & Wildlife Sanctuaries (all 63 US National Parks, 41 US National Monuments/Seashores, 44 Indian National Parks/Sanctuaries, plus global parks)
-  - **139** UNESCO World Heritage Sites (100% of India's 43 & USA's 26 UNESCO sites + global icons)
-  - **15** World Wonders
-  - **1,524** US, Indian & International Cities, Suburbs & Landmarks + automatic live geocoding for 30,000+ towns worldwide
+  - **176** UNESCO World Heritage Sites (100% of India's 45 & USA's 26 UNESCO sites, all Sri Lanka, Thailand, Cambodia, Vietnam, Malaysia & Nepal UNESCO sites, plus global icons)
+  - **194** World Wonders & Iconic Landmarks
+  - **3,982** US, Indian & International Cities, Suburbs & Landmarks + automatic live geocoding for 30,000+ towns worldwide
 - **Derived Parent Region Auto-Propagation:** Parent **Countries** and **States/Provinces** are strictly derived from leaf places — marking any city, National Park, UNESCO site, or World Wonder as `visited` or `bucket_list` automatically updates its parent Country and State/Province.
 - **✨ Gemini AI Travel Logger:** Dedicated **Gemini AI Logger** view in the navigation menu to log trips in plain English and extract & mark cities, National Parks, UNESCO sites, World Wonders, and airports in bulk with 1-tap **✕ Remove / ↩️ Restore** undo controls and smart suffix/landmark resolution (e.g., *"Space Needle Visitor Centre"* → `Space Needle`).
 - **Interactive Vector Maps & 3D Globe:** Switch between **World Map**, **Visited Regional Map** (with long-press country/state drill-down), **3D Interactive Globe**, and **My Places** category checklists.
