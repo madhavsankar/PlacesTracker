@@ -13,6 +13,7 @@ import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
+import android.webkit.GeolocationPermissions
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
@@ -44,6 +45,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
     private var pendingPermissionRequest: PermissionRequest? = null
+    private var pendingGeoOrigin: String? = null
+    private var pendingGeoCallback: GeolocationPermissions.Callback? = null
     private var fileUploadCallback: ValueCallback<Array<Uri>>? = null
     private var lastWebClientId: String = ""
 
@@ -127,6 +130,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val locationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        pendingGeoCallback?.invoke(pendingGeoOrigin, granted, false)
+        pendingGeoOrigin = null
+        pendingGeoCallback = null
+    }
+
     private val fileChooserLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -180,6 +193,7 @@ class MainActivity : AppCompatActivity() {
         settings.domStorageEnabled = true
         settings.databaseEnabled = true
         settings.allowFileAccess = true
+        settings.setGeolocationEnabled(true)
         settings.useWideViewPort = true
         settings.loadWithOverviewMode = true
         settings.textZoom = 100
@@ -280,6 +294,33 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
+            override fun onGeolocationPermissionsShowPrompt(
+                origin: String?,
+                callback: GeolocationPermissions.Callback?
+            ) {
+                if (origin == null || callback == null) return
+                val hasPermission = ContextCompat.checkSelfPermission(
+                    this@MainActivity,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+                    this@MainActivity,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+
+                if (hasPermission) {
+                    callback.invoke(origin, true, false)
+                } else {
+                    pendingGeoOrigin = origin
+                    pendingGeoCallback = callback
+                    locationPermissionLauncher.launch(
+                        arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        )
+                    )
+                }
+            }
+
             override fun onShowFileChooser(
                 webView: WebView?,
                 filePathCallback: ValueCallback<Array<Uri>>?,
@@ -354,6 +395,20 @@ class MainActivity : AppCompatActivity() {
                 onSaved()
             }
             .show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::webView.isInitialized) {
+            webView.onResume()
+        }
+    }
+
+    override fun onPause() {
+        if (::webView.isInitialized) {
+            webView.onPause()
+        }
+        super.onPause()
     }
 
     override fun onNewIntent(intent: Intent) {
