@@ -330,7 +330,6 @@ class PlacesTrackerClient {
     this.syncColorIndicators();
     this.setupClipboardImagePaste();
     this.setupBackNavigation();
-    this.setupPullToRefresh();
     this.openSection(this.activeSection || 'home', this.homeCategory || 'city', true);
     await this.ensureUsernamePrompt();
     await this.bootstrapState();
@@ -350,90 +349,7 @@ class PlacesTrackerClient {
     });
   }
 
-  setupPullToRefresh() {
-    let startY = 0;
-    let startX = 0;
-    let pulling = false;
-    let readyToRefresh = false;
-    const indicator = document.getElementById('pull-refresh-indicator');
-
-    window.addEventListener(
-      'touchstart',
-      (e) => {
-        if (window.scrollY > 4 || e.touches.length !== 1) {
-          pulling = false;
-          return;
-        }
-        const drawer = document.getElementById('nav-drawer');
-        if (drawer && !drawer.classList.contains('hidden')) return;
-        const target = e.target;
-        const inSvg = target && target.closest && target.closest('svg');
-        const inScrollList =
-          target && target.closest && target.closest('#viewport-places-list, #catalog-list, #us-parks-list');
-        if (inSvg || (inScrollList && inScrollList.scrollTop > 0)) {
-          pulling = false;
-          return;
-        }
-        startY = e.touches[0].clientY;
-        startX = e.touches[0].clientX;
-        pulling = true;
-        readyToRefresh = false;
-      },
-      { passive: true }
-    );
-
-    window.addEventListener(
-      'touchmove',
-      (e) => {
-        if (!pulling || e.touches.length !== 1) return;
-        if (window.scrollY > 4) {
-          pulling = false;
-          if (indicator) indicator.classList.add('hidden');
-          return;
-        }
-        const dy = e.touches[0].clientY - startY;
-        const dx = Math.abs(e.touches[0].clientX - startX);
-        if (dy > 24 && dy > dx * 1.6) {
-          if (indicator) {
-            indicator.classList.remove('hidden');
-            if (dy > 75) {
-              indicator.textContent = '↻ Release to sync & refresh';
-              readyToRefresh = true;
-            } else {
-              indicator.textContent = '↓ Pull down to refresh';
-              readyToRefresh = false;
-            }
-          }
-        } else if (dy < 10 && indicator) {
-          indicator.classList.add('hidden');
-          readyToRefresh = false;
-        }
-      },
-      { passive: true }
-    );
-
-    window.addEventListener(
-      'touchend',
-      () => {
-        if (!pulling) return;
-        pulling = false;
-        if (readyToRefresh) {
-          readyToRefresh = false;
-          this.refreshApp();
-        } else if (indicator) {
-          indicator.classList.add('hidden');
-        }
-      },
-      { passive: true }
-    );
-  }
-
   async refreshApp() {
-    const indicator = document.getElementById('pull-refresh-indicator');
-    if (indicator) {
-      indicator.textContent = '↻ Syncing & refreshing...';
-      indicator.classList.remove('hidden');
-    }
     const statusEl = document.getElementById('sync-status');
     if (statusEl) statusEl.textContent = 'Syncing...';
     sessionStorage.setItem('places_active_section', this.activeSection || 'home');
@@ -1266,7 +1182,7 @@ class PlacesTrackerClient {
     const statusFilter =
       (document.getElementById('home-status-filter') &&
         document.getElementById('home-status-filter').value) ||
-      'unvisited';
+      'visited';
 
     const matchesCat = (p) => {
       if (cat === 'country') return p.category === 'country';
@@ -1289,12 +1205,12 @@ class PlacesTrackerClient {
       (p.state_code || '').toLowerCase() === q ||
       (p.country_code || '').toLowerCase() === q;
 
-    // When a search query is typed, search across all places (or current category) globally;
-    // otherwise filter to places visible within the zoomed map viewport!
+    // When a search query is typed, search across all places globally;
+    // otherwise filter to places matching the status filter within the zoomed map viewport!
     const items = this.places.filter((p) => {
       if (q.length >= 2) {
         if (this.isParentCategory(p.category) && cat !== 'country') return false;
-        return matchesQuery(p) && matchesStatus(p);
+        return matchesQuery(p);
       }
       if (!matchesCat(p)) return false;
       if (!matchesStatus(p)) return false;
