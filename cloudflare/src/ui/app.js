@@ -331,6 +331,10 @@ class PlacesTrackerClient {
     this.setupClipboardImagePaste();
     this.setupBackNavigation();
     this.openSection(this.activeSection || 'home', this.homeCategory || 'city', true);
+    const initialHash = this.getCurrentAppHash();
+    if (initialHash) {
+      this.pushAppHistory(initialHash);
+    }
     await this.ensureUsernamePrompt();
     await this.bootstrapState();
     this.handleUrlQueryActions();
@@ -358,27 +362,70 @@ class PlacesTrackerClient {
     window.location.reload();
   }
 
+  getCurrentAppHash() {
+    if (this.activeSection === 'visited_map') {
+      if (this.regionalMode === 'state_focus' && this.focusedState && this.focusedState.place) {
+        return 'visited_map/state/' + (this.focusedState.place.state_code || this.focusedState.place.id);
+      }
+      if (this.regionalMode === 'us_states') return 'visited_map/country/US';
+      if (this.regionalMode === 'india_states') return 'visited_map/country/IN';
+      if (this.regionalMode === 'country_focus' && this.focusedCountry && this.focusedCountry.place) {
+        return 'visited_map/country/' + (this.focusedCountry.place.country_code || this.focusedCountry.place.id);
+      }
+      return 'visited_map';
+    }
+    if (this.activeSection && this.activeSection !== 'home') {
+      return this.activeSection;
+    }
+    return '';
+  }
+
+  pushAppHistory(hashSuffix) {
+    try {
+      const targetUrl = hashSuffix ? '#' + hashSuffix : window.location.pathname + window.location.search;
+      if (window.location.hash !== (hashSuffix ? '#' + hashSuffix : '')) {
+        window.history.pushState({ appNav: true, hash: hashSuffix || '' }, '', targetUrl);
+      }
+    } catch (_) { }
+  }
+
+  handleBackAction(fromPopState = false) {
+    const drawer = document.getElementById('nav-drawer');
+    if (drawer && !drawer.classList.contains('hidden')) {
+      drawer.classList.add('hidden');
+      return true;
+    }
+    const csvModal = document.getElementById('csv-import-modal');
+    if (csvModal) {
+      csvModal.remove();
+      return true;
+    }
+    if (
+      this.activeSection === 'visited_map' &&
+      (this.focusedState || this.focusedCountry || (this.regionalMode && this.regionalMode !== 'world'))
+    ) {
+      this.exitDrillDown(true);
+      return true;
+    }
+    if (this.activeSection === 'statistics' && this.activeStatsCircle) {
+      this.selectStatsCircle(this.activeStatsCircle);
+      return true;
+    }
+    if (this.activeSection && this.activeSection !== 'home') {
+      this.openSection('home', this.homeCategory || 'city', true);
+      return true;
+    }
+    return false;
+  }
+
   setupBackNavigation() {
     window.addEventListener('popstate', () => {
-      const drawer = document.getElementById('nav-drawer');
-      if (drawer && !drawer.classList.contains('hidden')) {
-        drawer.classList.add('hidden');
-        return;
-      }
-      const csvModal = document.getElementById('csv-import-modal');
-      if (csvModal) {
-        csvModal.remove();
-        return;
-      }
-      if (
-        this.activeSection === 'visited_map' &&
-        (this.focusedState || this.focusedCountry || this.regionalMode !== 'world')
-      ) {
-        this.exitDrillDown(true);
-        return;
-      }
-      if (this.activeSection && this.activeSection !== 'home') {
-        this.openSection('home', this.homeCategory || 'city', true);
+      const handled = this.handleBackAction(true);
+      if (handled) {
+        const nextHash = this.getCurrentAppHash();
+        if (nextHash && window.location.hash !== '#' + nextHash) {
+          this.pushAppHistory(nextHash);
+        }
       }
     });
   }
@@ -430,6 +477,7 @@ class PlacesTrackerClient {
     drawer.classList.toggle('hidden', !show);
     if (show) {
       this.updateUserUI();
+      this.pushAppHistory('drawer');
     }
   }
 
@@ -464,9 +512,7 @@ class PlacesTrackerClient {
     }
 
     if (!skipHistory) {
-      try {
-        window.history.pushState({ section: sec }, '');
-      } catch (_) { }
+      this.pushAppHistory(sec === 'home' ? '' : sec);
     }
 
     const viewMap = {
@@ -1430,6 +1476,18 @@ class PlacesTrackerClient {
         this.longPressTimer = null;
       }
     };
+    const triggerOnce = (evt, d) => {
+      const now = Date.now();
+      if (this.lastLongPressAt && now - this.lastLongPressAt < 650) {
+        return;
+      }
+      this.lastLongPressAt = now;
+      this.suppressClickUntil = now + 550;
+      try {
+        if (navigator.vibrate) navigator.vibrate(35);
+      } catch (_) { }
+      onLongPress(evt, d);
+    };
     selection
       .on('pointerdown', (evt, d) => {
         if (evt.button && evt.button !== 0) return;
@@ -1438,11 +1496,7 @@ class PlacesTrackerClient {
         clearTimer();
         this.longPressTimer = setTimeout(() => {
           this.longPressTimer = null;
-          this.suppressClickUntil = Date.now() + 550;
-          try {
-            if (navigator.vibrate) navigator.vibrate(35);
-          } catch (_) { }
-          onLongPress(evt, d);
+          triggerOnce(evt, d);
         }, 430);
       })
       .on('pointermove', (evt) => {
@@ -1457,8 +1511,7 @@ class PlacesTrackerClient {
         evt.preventDefault();
         evt.stopPropagation();
         clearTimer();
-        this.suppressClickUntil = Date.now() + 450;
-        onLongPress(evt, d);
+        triggerOnce(evt, d);
       });
   }
 
@@ -1578,9 +1631,7 @@ class PlacesTrackerClient {
     this.hideTooltip('us-tooltip');
     this.hideTooltip('map-tooltip');
     this.focusedState = null;
-    try {
-      window.history.pushState({ drilldown: countryObj.id }, '');
-    } catch (_) { }
+    this.pushAppHistory('visited_map/country/' + (countryObj.country_code || countryObj.id));
     this.showMobileToast((countryObj.flag_emoji || '🌍') + ' ' + countryObj.name);
     if (countryObj.country_code === 'US') {
       this.focusedCountry = null;
@@ -1620,9 +1671,7 @@ class PlacesTrackerClient {
   drillDownState(stateObj, feat) {
     if (!stateObj || !feat) return;
     this.hideTooltip('us-tooltip');
-    try {
-      window.history.pushState({ drilldown: stateObj.id }, '');
-    } catch (_) { }
+    this.pushAppHistory('visited_map/state/' + (stateObj.state_code || stateObj.id));
     this.showMobileToast((stateObj.flag_emoji || '📍') + ' ' + stateObj.name);
     if (!this.regionalLayerFilter || this.regionalLayerFilter === 'none') {
       const hasNP = this.places.some(
@@ -1647,12 +1696,18 @@ class PlacesTrackerClient {
       this.focusedState = null;
       this.regionalLayerFilter = 'none';
       this.setRegionalMode(prevMode, true);
+      if (!fromPopState) {
+        this.pushAppHistory(this.getCurrentAppHash());
+      }
       return;
     }
     this.focusedCountry = null;
     this.focusedState = null;
     this.regionalLayerFilter = 'none';
     this.setRegionalMode('world', true);
+    if (!fromPopState) {
+      this.pushAppHistory('visited_map');
+    }
   }
 
   setRegionalMode(mode, preserveFilter = false) {
