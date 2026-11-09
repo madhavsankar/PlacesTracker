@@ -140,6 +140,13 @@ def main() -> None:
     builder = WorkerBuilder()
     data_path, view_path, worker_path = builder.build_all()
     print(f"Built:\n  - {data_path}\n  - {view_path}\n  - {worker_path}")
+    if "--skip-tests" not in sys.argv:
+        import unittest
+
+        suite = unittest.defaultTestLoader.discover(os.path.join(REPO_ROOT, "tests"))
+        result = unittest.TextTestRunner(verbosity=2).run(suite)
+        if not result.wasSuccessful():
+            sys.exit(1)
 
 
 if __name__ == "__main__":

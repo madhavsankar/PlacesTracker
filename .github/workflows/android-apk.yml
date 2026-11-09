@@ -53,6 +53,9 @@ jobs:
           echo "${GRADLE_DIR}/bin" >> $GITHUB_PATH
           "${GRADLE_DIR}/bin/gradle" --version
 
+      - name: Run Catalog, Cloudflare & Android Regression Evals
+        run: python3 -m unittest discover -s tests -v
+
       - name: Build Signed Release or Debug APK
         working-directory: android
         env:

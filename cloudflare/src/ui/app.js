@@ -1095,10 +1095,10 @@ class PlacesTrackerClient {
       if (!btn) return;
       if (k === c) {
         btn.className =
-          'py-2 px-1 sm:px-2 flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 bg-emerald-500/15 border-b-2 border-emerald-400 transition min-w-0';
+          'py-2 px-1 sm:px-2 flex items-center justify-center gap-1.5 bg-emerald-500/15 border-b-2 border-emerald-400 transition min-w-0';
       } else {
         btn.className =
-          'py-2 px-1 sm:px-2 flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 hover:bg-white/5 transition min-w-0';
+          'py-2 px-1 sm:px-2 flex items-center justify-center gap-1.5 hover:bg-white/5 transition min-w-0';
       }
     });
 
@@ -1988,6 +1988,7 @@ class PlacesTrackerClient {
   }
 
   async cyclePlaceStatus(placeId) {
+    if (this.suppressClickUntil && Date.now() < this.suppressClickUntil) return;
     const p = this.places.find((x) => x.id === placeId);
     if (!p) return;
     if (this.isParentCategory(p.category)) {

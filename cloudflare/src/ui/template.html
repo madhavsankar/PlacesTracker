@@ -126,21 +126,20 @@
       <div id="gemini-reply" class="hidden p-2.5 rounded-xl bg-slate-950/80 border border-white/10 text-xs text-slate-200 leading-relaxed"></div>
 
       <!-- Places Been Style 3-Column Top Category & Counter Bar (Cities | UNESCO & Sights | Airports) -->
-      <div class="grid grid-cols-3 rounded-xl bg-[#111827] border border-white/10 divide-x divide-white/10 overflow-hidden text-[11px] sm:text-xs">
-        <button type="button" id="home-cat-city" onclick="app.setHomeCategory('city')" title="Cities" aria-label="Cities" class="py-2 px-1 sm:px-2 flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 bg-emerald-500/15 border-b-2 border-emerald-400 transition min-w-0">
-          <span class="text-xs shrink-0">🏙️</span>
-          <span class="font-medium text-slate-200 truncate">Cities</span>
+      <div class="grid grid-cols-3 rounded-xl bg-[#111827] border border-white/10 divide-x divide-white/10 overflow-hidden text-xs">
+        <button type="button" id="home-cat-city" onclick="app.setHomeCategory('city')" title="Cities" aria-label="Cities" class="py-2 px-1 sm:px-2 flex items-center justify-center gap-1.5 bg-emerald-500/15 border-b-2 border-emerald-400 transition min-w-0">
+          <span class="text-sm sm:text-xs shrink-0">🏙️</span>
+          <span class="hidden sm:inline font-medium text-slate-300 truncate">Cities</span>
           <span id="bar-count-city" class="font-semibold shrink-0">0</span>
         </button>
-        <button type="button" id="home-cat-sights" onclick="app.setHomeCategory('sights')" title="UNESCO &amp; Sights" aria-label="UNESCO &amp; Sights" class="py-2 px-1 sm:px-2 flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 hover:bg-white/5 transition min-w-0">
-          <span class="text-xs shrink-0">🏛️</span>
-          <span class="sm:hidden font-medium text-slate-300 truncate">Sights</span>
+        <button type="button" id="home-cat-sights" onclick="app.setHomeCategory('sights')" title="UNESCO &amp; Sights" aria-label="UNESCO &amp; Sights" class="py-2 px-1 sm:px-2 flex items-center justify-center gap-1.5 hover:bg-white/5 transition min-w-0">
+          <span class="text-sm sm:text-xs shrink-0">🏛️</span>
           <span class="hidden sm:inline font-medium text-slate-300 truncate">UNESCO &amp; Sights</span>
           <span id="bar-count-sights" class="font-semibold shrink-0">0</span>
         </button>
-        <button type="button" id="home-cat-airport" onclick="app.setHomeCategory('airport')" title="Airports" aria-label="Airports" class="py-2 px-1 sm:px-2 flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 hover:bg-white/5 transition min-w-0">
-          <span class="text-xs shrink-0">✈️</span>
-          <span class="font-medium text-slate-300 truncate">Airports</span>
+        <button type="button" id="home-cat-airport" onclick="app.setHomeCategory('airport')" title="Airports" aria-label="Airports" class="py-2 px-1 sm:px-2 flex items-center justify-center gap-1.5 hover:bg-white/5 transition min-w-0">
+          <span class="text-sm sm:text-xs shrink-0">✈️</span>
+          <span class="hidden sm:inline font-medium text-slate-300 truncate">Airports</span>
           <span id="bar-count-airport" class="font-semibold text-slate-300 shrink-0">0</span>
         </button>
       </div>
