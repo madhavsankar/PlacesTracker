@@ -1049,10 +1049,10 @@ class PlacesTrackerClient {
       if (!btn) return;
       if (k === c) {
         btn.className =
-          'py-2 px-1.5 flex items-center justify-center gap-1.5 bg-emerald-500/15 border-b-2 border-emerald-400 transition min-w-0';
+          'py-2 px-1 sm:px-2 flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 bg-emerald-500/15 border-b-2 border-emerald-400 transition min-w-0';
       } else {
         btn.className =
-          'py-2 px-1.5 flex items-center justify-center gap-1.5 hover:bg-white/5 transition min-w-0';
+          'py-2 px-1 sm:px-2 flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 hover:bg-white/5 transition min-w-0';
       }
     });
 
@@ -1262,7 +1262,7 @@ class PlacesTrackerClient {
       const safeQ = rawSearch.replace(/'/g, "\\'").replace(/"/g, '&quot;');
       const dispQ = rawSearch.replace(/</g, '&lt;');
       html +=
-        '<div class="px-3 py-2.5 bg-emerald-950/30 flex items-center justify-between gap-2">' +
+        '<div class="px-3 py-2.5 bg-emerald-950/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2">' +
         '<div class="min-w-0">' +
         '<div class="text-xs font-semibold text-emerald-300 truncate">➕ Add & geocode "' +
         dispQ +
@@ -1272,10 +1272,10 @@ class PlacesTrackerClient {
         '<div class="flex items-center gap-1.5 shrink-0">' +
         '<button type="button" onclick="app.quickAddAndMarkCity(\'' +
         safeQ +
-        '\', \'visited\')" class="px-2.5 py-1 rounded-lg bg-emerald-500 text-slate-950 text-[11px] font-bold">+ Been</button>' +
+        '\', \'visited\')" class="flex-1 sm:flex-none px-2.5 py-1 rounded-lg bg-emerald-500 text-slate-950 text-[11px] font-bold">+ Been</button>' +
         '<button type="button" onclick="app.quickAddAndMarkCity(\'' +
         safeQ +
-        '\', \'bucket_list\')" class="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 text-[11px] font-bold">+ Want</button>' +
+        '\', \'bucket_list\')" class="flex-1 sm:flex-none px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 text-[11px] font-bold">+ Want</button>' +
         '</div>' +
         '</div>';
     }
@@ -2418,23 +2418,23 @@ class PlacesTrackerClient {
 
                   const statusBadge =
                     co.status === 'visited'
-                      ? '<span class="text-[11px] font-semibold px-2 py-0.5 rounded border border-emerald-500/50 bg-emerald-500/15 text-emerald-300 shrink-0">✓ Visited</span>'
+                      ? '<span class="text-[10px] sm:text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded border border-emerald-500/50 bg-emerald-500/15 text-emerald-300 shrink-0">✓ Visited</span>'
                       : co.status === 'bucket_list'
-                        ? '<span class="text-[11px] font-semibold px-2 py-0.5 rounded border border-amber-500/50 bg-amber-500/15 text-amber-300 shrink-0">🎯 Want</span>'
-                        : '<span class="text-[11px] font-medium px-2 py-0.5 rounded border border-slate-700 bg-slate-800/80 text-slate-400 shrink-0">Not Visited</span>';
+                        ? '<span class="text-[10px] sm:text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded border border-amber-500/50 bg-amber-500/15 text-amber-300 shrink-0">🎯 Want</span>'
+                        : '<span class="text-[10px] sm:text-[11px] font-medium px-1.5 sm:px-2 py-0.5 rounded border border-slate-700 bg-slate-800/80 text-slate-400 shrink-0">Not Visited</span>';
 
                   const hasStates = states.length > 0;
                   const statesExpanded = !!this.expandedCountryStates[co.country_code];
                   const leftChevron = hasStates
-                    ? '<span class="text-emerald-400 text-xs w-3.5 inline-block font-bold">' +
+                    ? '<span class="text-emerald-400 text-xs w-3.5 inline-block font-bold shrink-0">' +
                       (statesExpanded ? '▾' : '▸') +
                       '</span>'
-                    : '<span class="w-3.5 inline-block"></span>';
+                    : '<span class="w-3.5 inline-block shrink-0"></span>';
                   const stateBtnHtml = hasStates
-                    ? '<span class="px-2 py-0.5 rounded bg-slate-800 text-[11px] font-semibold text-sky-300 border border-sky-500/30 shrink-0">' +
+                    ? '<span class="px-1.5 sm:px-2 py-0.5 rounded bg-slate-800 text-[10px] sm:text-[11px] font-semibold text-sky-300 border border-sky-500/30 shrink-0">' +
                       (statesExpanded
-                        ? '▾ Hide States (' + visStates + '/' + states.length + ')'
-                        : '▸ States (' + visStates + '/' + states.length + ')') +
+                        ? '▾ States ' + visStates + '/' + states.length
+                        : '▸ States ' + visStates + '/' + states.length) +
                       '</span>'
                     : '';
 
@@ -3143,7 +3143,7 @@ class PlacesTrackerClient {
           return (
             '<button type="button" onclick="app.setStatsCircleStatusFilter(\'' +
             key +
-            '\')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ' +
+            '\')" class="px-2.5 py-1.5 sm:py-1 rounded-lg text-[11px] font-semibold text-center truncate transition ' +
             (active
               ? activeBg + ' text-slate-950'
               : 'bg-slate-900 text-slate-300 border border-white/10 hover:bg-slate-800') +
@@ -3156,17 +3156,17 @@ class PlacesTrackerClient {
         detailEl.innerHTML =
           '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">' +
           '<div class="flex items-center justify-between gap-2">' +
-          '<span class="text-xs sm:text-sm font-bold text-white">' +
+          '<span class="text-xs sm:text-sm font-bold text-white truncate">' +
           (titles[this.activeStatsCircle] || 'List') +
           '</span>' +
           '<button type="button" onclick="app.selectStatsCircle(\'' +
           this.activeStatsCircle +
-          '\')" class="sm:hidden text-xs text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800">Close ✕</button>' +
+          '\')" class="sm:hidden text-xs text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 shrink-0">Close ✕</button>' +
           '</div>' +
-          '<div class="flex flex-wrap items-center gap-1.5">' +
+          '<div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 w-full sm:w-auto">' +
           pillBtn('all', 'All (' + allItems.length + ')', 'bg-sky-400') +
           pillBtn('visited', '✓ Visited (' + cntVisited + ')', 'bg-emerald-400') +
-          pillBtn('bucket_list', '🎯 Want to Go (' + cntWant + ')', 'bg-amber-400') +
+          pillBtn('bucket_list', '🎯 Want (' + cntWant + ')', 'bg-amber-400') +
           pillBtn('unvisited', 'Not Visited (' + cntUnvisited + ')', 'bg-slate-300') +
           '</div>' +
           '</div>' +
@@ -3248,13 +3248,13 @@ class PlacesTrackerClient {
       }
 
       const row = (icon, label, val) =>
-        '<div class="py-2 flex items-center justify-between gap-2">' +
+        '<div class="py-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-x-3 gap-y-0.5">' +
         '<span class="text-slate-300 flex items-center gap-2 shrink-0"><span class="text-amber-400 font-bold w-5 text-center">' +
         icon +
         '</span>' +
         label +
         '</span>' +
-        '<span class="font-semibold text-white text-right truncate">' +
+        '<span class="font-semibold text-white text-right ml-auto break-words">' +
         (val || '—') +
         '</span>' +
         '</div>';
@@ -4197,16 +4197,22 @@ class PlacesTrackerClient {
     const rowsHtml = log
       .map((item) => {
         const lbl = item.action_label || 'Updated';
+        let shortLbl = lbl;
         let badgeCls = 'bg-slate-800 text-slate-300 border-slate-700';
         if (lbl === 'Added as Been') {
+          shortLbl = '+ Been';
           badgeCls = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
         } else if (lbl === 'Added as Want') {
+          shortLbl = '+ Want';
           badgeCls = 'bg-amber-500/20 text-amber-300 border-amber-500/40';
         } else if (lbl === 'Converted from Want to Been') {
+          shortLbl = 'Want → Been';
           badgeCls = 'bg-sky-500/20 text-sky-300 border-sky-500/40';
         } else if (lbl === 'Converted from Been to Want') {
+          shortLbl = 'Been → Want';
           badgeCls = 'bg-amber-500/20 text-amber-300 border-amber-500/40';
         } else if (lbl.startsWith('Removed')) {
+          shortLbl = 'Removed';
           badgeCls = 'bg-rose-500/15 text-rose-300 border-rose-500/30';
         }
 
@@ -4238,10 +4244,14 @@ class PlacesTrackerClient {
           (timeStr ? ' · ' + timeStr : '') +
           '</div>' +
           '</div>' +
-          '<span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg border shrink-0 ' +
+          '<span class="text-[10px] sm:text-[11px] font-semibold px-2 py-1 rounded-lg border shrink-0 ' +
           badgeCls +
           '">' +
+          '<span class="sm:hidden">' +
+          shortLbl +
+          '</span><span class="hidden sm:inline">' +
           lbl +
+          '</span>' +
           '</span>' +
           '</div>'
         );

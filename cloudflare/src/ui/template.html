@@ -126,20 +126,21 @@
       <div id="gemini-reply" class="hidden p-2.5 rounded-xl bg-slate-950/80 border border-white/10 text-xs text-slate-200 leading-relaxed"></div>
 
       <!-- Places Been Style 3-Column Top Category & Counter Bar (Cities | UNESCO & Sights | Airports) -->
-      <div class="grid grid-cols-3 rounded-xl bg-[#111827] border border-white/10 divide-x divide-white/10 overflow-hidden text-xs">
-        <button type="button" id="home-cat-city" onclick="app.setHomeCategory('city')" title="Cities" aria-label="Cities" class="py-2 px-1.5 flex items-center justify-center gap-1.5 bg-emerald-500/15 border-b-2 border-emerald-400 transition min-w-0">
-          <span class="text-sm sm:text-xs shrink-0">🏙️</span>
-          <span class="hidden sm:inline font-medium text-slate-300 truncate">Cities</span>
+      <div class="grid grid-cols-3 rounded-xl bg-[#111827] border border-white/10 divide-x divide-white/10 overflow-hidden text-[11px] sm:text-xs">
+        <button type="button" id="home-cat-city" onclick="app.setHomeCategory('city')" title="Cities" aria-label="Cities" class="py-2 px-1 sm:px-2 flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 bg-emerald-500/15 border-b-2 border-emerald-400 transition min-w-0">
+          <span class="text-xs shrink-0">🏙️</span>
+          <span class="font-medium text-slate-200 truncate">Cities</span>
           <span id="bar-count-city" class="font-semibold shrink-0">0</span>
         </button>
-        <button type="button" id="home-cat-sights" onclick="app.setHomeCategory('sights')" title="UNESCO &amp; Sights" aria-label="UNESCO &amp; Sights" class="py-2 px-1.5 flex items-center justify-center gap-1.5 hover:bg-white/5 transition min-w-0">
-          <span class="text-sm sm:text-xs shrink-0">🏛️</span>
+        <button type="button" id="home-cat-sights" onclick="app.setHomeCategory('sights')" title="UNESCO &amp; Sights" aria-label="UNESCO &amp; Sights" class="py-2 px-1 sm:px-2 flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 hover:bg-white/5 transition min-w-0">
+          <span class="text-xs shrink-0">🏛️</span>
+          <span class="sm:hidden font-medium text-slate-300 truncate">Sights</span>
           <span class="hidden sm:inline font-medium text-slate-300 truncate">UNESCO &amp; Sights</span>
           <span id="bar-count-sights" class="font-semibold shrink-0">0</span>
         </button>
-        <button type="button" id="home-cat-airport" onclick="app.setHomeCategory('airport')" title="Airports" aria-label="Airports" class="py-2 px-1.5 flex items-center justify-center gap-1.5 hover:bg-white/5 transition min-w-0">
-          <span class="text-sm sm:text-xs shrink-0">✈️</span>
-          <span class="hidden sm:inline font-medium text-slate-300 truncate">Airports</span>
+        <button type="button" id="home-cat-airport" onclick="app.setHomeCategory('airport')" title="Airports" aria-label="Airports" class="py-2 px-1 sm:px-2 flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 hover:bg-white/5 transition min-w-0">
+          <span class="text-xs shrink-0">✈️</span>
+          <span class="font-medium text-slate-300 truncate">Airports</span>
           <span id="bar-count-airport" class="font-semibold text-slate-300 shrink-0">0</span>
         </button>
       </div>
@@ -164,11 +165,11 @@
         </div>
 
         <!-- Viewport List Header Bar (Filter Left, BEEN | WANT | FAV Right — matching Screenshot 1) -->
-        <div class="bg-emerald-950/60 border-y border-emerald-500/25 px-2.5 py-2 flex items-center justify-between gap-2">
+        <div class="bg-emerald-950/60 border-y border-emerald-500/25 px-2.5 py-2 flex flex-wrap items-center justify-between gap-2">
           <div class="flex items-center gap-1.5 min-w-0 flex-1">
             <span class="text-xs text-emerald-400 shrink-0">🎛️</span>
             <!-- Status Filter for Viewport List (Visited Only default vs Unvisited Only) -->
-            <select id="home-status-filter" onchange="app.onHomeSubfilterChange()" class="h-7 bg-slate-900/95 text-slate-100 border border-white/15 rounded-lg px-2 text-[11px] font-medium focus:outline-none">
+            <select id="home-status-filter" onchange="app.onHomeSubfilterChange()" class="h-7 max-w-[128px] sm:max-w-none bg-slate-900/95 text-slate-100 border border-white/15 rounded-lg px-2 text-[11px] font-medium focus:outline-none shrink-0">
               <option value="visited" selected>Visited Only</option>
               <option value="unvisited">Unvisited Only</option>
             </select>
@@ -197,23 +198,25 @@
           <div id="drilldown-focused-title" class="text-xs sm:text-sm font-bold text-white truncate px-1"></div>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-1.5">
-          <div class="flex items-center gap-1.5 flex-1 min-w-0">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div class="flex items-center justify-between gap-2 min-w-0">
             <span id="visited-map-world-heading" class="text-xs sm:text-sm font-bold text-white truncate">🌍 World Visited Map</span>
-            <select id="regional-layer-filter" onchange="app.setRegionalLayerFilter(this.value)" class="hidden h-9 bg-slate-950/90 text-slate-100 border border-white/15 rounded-xl px-2.5 text-xs font-medium focus:outline-none focus:border-emerald-500">
+            <span id="us-progress-pill" class="text-[11px] font-semibold px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shrink-0"></span>
+          </div>
+          <div class="grid grid-cols-2 sm:flex sm:items-center gap-1.5 w-full sm:w-auto">
+            <select id="regional-layer-filter" onchange="app.setRegionalLayerFilter(this.value)" class="hidden h-9 w-full sm:w-auto min-w-0 bg-slate-950/90 text-slate-100 border border-white/15 rounded-xl px-2.5 text-xs font-medium focus:outline-none focus:border-emerald-500 truncate">
               <option value="none">🗺️ Regions Only</option>
               <option value="national_park">🌲 Nat. Parks</option>
               <option value="unesco">🏛️ UNESCO</option>
-              <option value="world_wonder">✨ Wonders &amp; Iconic Sights</option>
+              <option value="world_wonder">✨ Wonders &amp; Sights</option>
               <option value="city">🏙️ Cities</option>
               <option value="airport">✈️ Airports</option>
             </select>
-            <select id="regional-status-filter" onchange="app.setRegionalStatusFilter(this.value)" class="hidden h-9 bg-slate-950/90 text-slate-100 border border-white/15 rounded-xl px-2.5 text-xs font-medium focus:outline-none focus:border-emerald-500">
+            <select id="regional-status-filter" onchange="app.setRegionalStatusFilter(this.value)" class="hidden h-9 w-full sm:w-auto min-w-0 bg-slate-950/90 text-slate-100 border border-white/15 rounded-xl px-2.5 text-xs font-medium focus:outline-none focus:border-emerald-500 truncate">
               <option value="visited" selected>Visited Only</option>
               <option value="all">Show All</option>
             </select>
           </div>
-          <span id="us-progress-pill" class="text-[11px] font-semibold px-2.5 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shrink-0"></span>
         </div>
 
         <p id="regional-subtitle" class="text-[11px] text-slate-400 px-0.5">Long-press any country (e.g. United States, India, Canada) to open its country &amp; states map</p>
@@ -269,9 +272,9 @@
         <div id="my-places-tile-grid" class="grid grid-cols-3 gap-[1.5px] bg-black/80"></div>
 
         <!-- Active Tile Header & Quick Search Bar -->
-        <div class="px-3 py-2 bg-slate-950/90 border-y border-white/10 flex items-center justify-between gap-2">
-          <span id="my-places-active-label" class="text-xs font-bold text-emerald-400 truncate">🌍 Countries+States</span>
-          <input id="my-places-search" oninput="app.renderCatalogList()" type="text" placeholder="Filter places..." class="h-7 bg-slate-900 text-white border border-white/15 rounded-lg px-2.5 text-xs w-44 sm:w-60 focus:outline-none focus:border-emerald-500" />
+        <div class="px-3 py-2 bg-slate-950/90 border-y border-white/10 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
+          <span id="my-places-active-label" class="text-xs font-bold text-emerald-400 truncate min-w-0">🌍 Countries+States</span>
+          <input id="my-places-search" oninput="app.renderCatalogList()" type="text" placeholder="Filter places..." class="h-7 bg-slate-900 text-white border border-white/15 rounded-lg px-2.5 text-xs w-full sm:w-60 flex-1 sm:flex-none min-w-[140px] max-w-full sm:max-w-xs focus:outline-none focus:border-emerald-500" />
         </div>
 
         <!-- Continent Accordion List (Asia, Africa, Europe, North America, South America, Oceania, Antarctica) -->
@@ -399,12 +402,12 @@
     <div id="view-csv" class="hidden space-y-3">
       <!-- 1. Export CSV Section -->
       <div class="card rounded-2xl p-4 max-w-2xl mx-auto space-y-3">
-        <div class="flex items-center justify-between gap-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 class="text-sm font-bold text-white flex items-center gap-1.5">⬇️ Export CSV</h2>
             <p class="text-[11px] text-slate-400">Download all visited (&ldquo;been&rdquo;) &amp; want-to-go (&ldquo;want&rdquo;) places in Places Been format (<code>lat;lon;country;city;been</code>).</p>
           </div>
-          <button type="button" onclick="app.triggerCsvExport()" class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 text-xs font-bold shrink-0 inline-flex items-center gap-1.5 shadow-lg">
+          <button type="button" onclick="app.triggerCsvExport()" class="w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 text-xs font-bold shrink-0 inline-flex items-center gap-1.5 shadow-lg">
             <span>⬇️</span><span>Export CSV</span>
           </button>
         </div>
@@ -421,7 +424,7 @@
         <!-- Import Mode Selector: Append (Default) vs Override -->
         <div class="space-y-1.5">
           <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Import Mode</div>
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <button type="button" id="csv-mode-append" onclick="app.setCsvImportMode('append')" class="p-2.5 rounded-xl border border-emerald-400 bg-emerald-500/15 text-emerald-300 text-xs font-bold flex flex-col items-start gap-0.5 text-left transition">
               <span>➕ Append (Default)</span>
               <span class="text-[10px] font-normal text-slate-300">Keep existing places &amp; add new ones</span>
@@ -476,9 +479,9 @@
 
         <textarea id="csv-gemini-input" rows="4" placeholder="e.g. I visited Seattle, Space Needle, Mount Rainier National Park, Portland, Multnomah Falls, and San Francisco Golden Gate Bridge..." class="w-full bg-slate-950 text-white border border-slate-700 rounded-xl p-3 text-xs focus:outline-none focus:border-purple-400"></textarea>
 
-        <div class="flex items-center justify-between gap-2">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span class="text-[11px] text-slate-500">Extracts cities, parks, UNESCO sites, wonders &amp; airports</span>
-          <button type="button" id="csv-gemini-btn" onclick="app.askGeminiFromCsvPage()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-emerald-500 hover:opacity-95 active:scale-95 text-slate-950 font-bold text-xs shadow-lg inline-flex items-center gap-1.5 shrink-0">
+          <button type="button" id="csv-gemini-btn" onclick="app.askGeminiFromCsvPage()" class="w-full sm:w-auto justify-center px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-emerald-500 hover:opacity-95 active:scale-95 text-slate-950 font-bold text-xs shadow-lg inline-flex items-center gap-1.5 shrink-0">
             <span>✨</span><span>Log Places with Gemini</span>
           </button>
         </div>
