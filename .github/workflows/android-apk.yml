@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: build-android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-apk:
     runs-on: ubuntu-latest
@@ -16,15 +20,38 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle 8.7
-        uses: gradle/actions/setup-gradle@v3
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
         with:
-          gradle-version: '8.7'
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('android/**/*.gradle*', 'android/**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Setup Gradle 8.7
+        run: |
+          GRADLE_VERSION="8.7"
+          GRADLE_DIR="/opt/gradle/gradle-${GRADLE_VERSION}"
+          if [ ! -x "${GRADLE_DIR}/bin/gradle" ]; then
+            sudo mkdir -p /opt/gradle
+            curl -fsSL --retry 5 --retry-delay 3 --retry-all-errors \
+              "https://github.com/gradle/gradle-distributions/releases/download/v${GRADLE_VERSION}.0/gradle-${GRADLE_VERSION}-bin.zip" \
+              -o /tmp/gradle.zip || \
+            curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors \
+              "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" \
+              -o /tmp/gradle.zip
+            sudo unzip -q -o /tmp/gradle.zip -d /opt/gradle
+            rm -f /tmp/gradle.zip
+          fi
+          echo "${GRADLE_DIR}/bin" >> $GITHUB_PATH
+          "${GRADLE_DIR}/bin/gradle" --version
 
       - name: Build Signed Release or Debug APK
         working-directory: android
