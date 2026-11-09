@@ -132,20 +132,20 @@
 
       <!-- Places Been Style 3-Column Top Category & Counter Bar (Cities | UNESCO & Sights | Airports) -->
       <div class="grid grid-cols-3 rounded-xl bg-[#111827] border border-white/10 divide-x divide-white/10 overflow-hidden text-xs">
-        <button type="button" id="home-cat-city" onclick="app.setHomeCategory('city')" class="py-2 px-1 flex items-center justify-center gap-1 bg-emerald-500/15 border-b-2 border-emerald-400 transition truncate">
-          <span>🏙️</span>
-          <span class="font-medium text-slate-300">Cities</span>
-          <span id="bar-count-city" class="font-semibold">0</span>
+        <button type="button" id="home-cat-city" onclick="app.setHomeCategory('city')" title="Cities" aria-label="Cities" class="py-2 px-1.5 flex items-center justify-center gap-1.5 bg-emerald-500/15 border-b-2 border-emerald-400 transition min-w-0">
+          <span class="text-sm sm:text-xs shrink-0">🏙️</span>
+          <span class="hidden sm:inline font-medium text-slate-300 truncate">Cities</span>
+          <span id="bar-count-city" class="font-semibold shrink-0">0</span>
         </button>
-        <button type="button" id="home-cat-sights" onclick="app.setHomeCategory('sights')" class="py-2 px-1 flex items-center justify-center gap-1 hover:bg-white/5 transition truncate">
-          <span>🏛️</span>
-          <span class="font-medium text-slate-300">UNESCO &amp; Sights</span>
-          <span id="bar-count-sights" class="font-semibold">0</span>
+        <button type="button" id="home-cat-sights" onclick="app.setHomeCategory('sights')" title="UNESCO &amp; Sights" aria-label="UNESCO &amp; Sights" class="py-2 px-1.5 flex items-center justify-center gap-1.5 hover:bg-white/5 transition min-w-0">
+          <span class="text-sm sm:text-xs shrink-0">🏛️</span>
+          <span class="hidden sm:inline font-medium text-slate-300 truncate">UNESCO &amp; Sights</span>
+          <span id="bar-count-sights" class="font-semibold shrink-0">0</span>
         </button>
-        <button type="button" id="home-cat-airport" onclick="app.setHomeCategory('airport')" class="py-2 px-1 flex items-center justify-center gap-1 hover:bg-white/5 transition truncate">
-          <span>✈️</span>
-          <span class="font-medium text-slate-300">Airports</span>
-          <span id="bar-count-airport" class="font-semibold text-slate-300">0</span>
+        <button type="button" id="home-cat-airport" onclick="app.setHomeCategory('airport')" title="Airports" aria-label="Airports" class="py-2 px-1.5 flex items-center justify-center gap-1.5 hover:bg-white/5 transition min-w-0">
+          <span class="text-sm sm:text-xs shrink-0">✈️</span>
+          <span class="hidden sm:inline font-medium text-slate-300 truncate">Airports</span>
+          <span id="bar-count-airport" class="font-semibold text-slate-300 shrink-0">0</span>
         </button>
       </div>
 

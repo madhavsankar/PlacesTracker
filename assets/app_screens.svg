@@ -31,9 +31,9 @@
     <rect x="12" y="90" width="264" height="28" rx="8" fill="#111827" stroke="#1e293b"/>
     <rect x="13" y="91" width="87" height="26" rx="7" fill="#064e3b" opacity="0.55"/>
     <line x1="14" y1="117" x2="99" y2="117" stroke="#10b981" stroke-width="2"/>
-    <text x="24" y="108" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="9.5" font-weight="bold">🏙️ Cities 142</text>
-    <text x="108" y="108" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9.5">🏛️ Sights 38</text>
-    <text x="198" y="108" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9.5">✈️ Airports 19</text>
+    <text x="56" y="108" text-anchor="middle" fill="#f8fafc" font-family="system-ui, sans-serif" font-size="10.5" font-weight="bold">🏙️ 142</text>
+    <text x="144" y="108" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10.5">🏛️ 38</text>
+    <text x="232" y="108" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10.5">✈️ 19</text>
 
     <!-- Interactive Map Viewport -->
     <rect x="12" y="125" width="264" height="125" rx="10" fill="#0f2942" stroke="#1e293b"/>

@@ -1133,10 +1133,10 @@ class PlacesTrackerClient {
       if (!btn) return;
       if (k === c) {
         btn.className =
-          'py-2 px-1 flex items-center justify-center gap-1 bg-emerald-500/15 border-b-2 border-emerald-400 transition truncate';
+          'py-2 px-1.5 flex items-center justify-center gap-1.5 bg-emerald-500/15 border-b-2 border-emerald-400 transition min-w-0';
       } else {
         btn.className =
-          'py-2 px-1 flex items-center justify-center gap-1 hover:bg-white/5 transition truncate';
+          'py-2 px-1.5 flex items-center justify-center gap-1.5 hover:bg-white/5 transition min-w-0';
       }
     });
 
@@ -1174,9 +1174,8 @@ class PlacesTrackerClient {
       cityEl.innerHTML =
         '<span class="text-sky-400">' +
         been +
-        '</span> <span class="text-amber-400">' +
-        want +
-        '</span>';
+        '</span>' +
+        (want > 0 ? ' <span class="text-amber-400">' + want + '</span>' : '');
     }
     if (sightsEl) {
       const sights = this.places.filter((p) => this.isSightPlace(p));
