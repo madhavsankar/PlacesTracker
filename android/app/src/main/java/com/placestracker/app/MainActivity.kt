@@ -40,6 +40,8 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val PREFS_NAME = "places_tracker_prefs"
         private const val KEY_SERVER_URL = "server_url"
+        private const val KEY_SAVED_ID_TOKEN = "saved_google_id_token"
+        private const val KEY_SAVED_EMAIL = "saved_google_email"
         private const val PLACEHOLDER_URL = "https://places-tracker.example.workers.dev"
     }
 
@@ -71,6 +73,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendAuthResultToWeb(idToken: String, email: String, error: String) {
+        if (idToken.isNotEmpty() && email.isNotEmpty()) {
+            getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putString(KEY_SAVED_ID_TOKEN, idToken)
+                .putString(KEY_SAVED_EMAIL, email)
+                .apply()
+        }
         val payload = JSONObject().apply {
             put("idToken", idToken)
             put("email", email)
@@ -88,6 +97,24 @@ class MainActivity : AppCompatActivity() {
 
     inner class AndroidAuthBridge {
         @JavascriptInterface
+        fun getSavedAuth(): String {
+            val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            var idToken = prefs.getString(KEY_SAVED_ID_TOKEN, "") ?: ""
+            var email = prefs.getString(KEY_SAVED_EMAIL, "") ?: ""
+            if (idToken.isEmpty() || email.isEmpty()) {
+                val lastAccount = GoogleSignIn.getLastSignedInAccount(this@MainActivity)
+                if (lastAccount != null) {
+                    if (idToken.isEmpty()) idToken = lastAccount.idToken ?: ""
+                    if (email.isEmpty()) email = lastAccount.email?.trim()?.lowercase() ?: ""
+                }
+            }
+            return JSONObject().apply {
+                put("idToken", idToken)
+                put("email", email)
+            }.toString()
+        }
+
+        @JavascriptInterface
         fun signIn(webClientId: String?) {
             val cleanClientId = (webClientId ?: "").trim()
             lastWebClientId = cleanClientId
@@ -98,14 +125,24 @@ class MainActivity : AppCompatActivity() {
                     gsoBuilder.requestIdToken(cleanClientId)
                 }
                 val client = GoogleSignIn.getClient(this@MainActivity, gsoBuilder.build())
-                client.signOut().addOnCompleteListener {
-                    googleSignInLauncher.launch(client.signInIntent)
+                client.silentSignIn().addOnCompleteListener { task ->
+                    if (task.isSuccessful && task.result?.idToken != null && task.result?.email != null) {
+                        val acc = task.result!!
+                        sendAuthResultToWeb(acc.idToken ?: "", acc.email?.trim()?.lowercase() ?: "", "")
+                    } else {
+                        googleSignInLauncher.launch(client.signInIntent)
+                    }
                 }
             }
         }
 
         @JavascriptInterface
         fun signOut() {
+            getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .remove(KEY_SAVED_ID_TOKEN)
+                .remove(KEY_SAVED_EMAIL)
+                .apply()
             runOnUiThread {
                 val gsoBuilder = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestEmail()

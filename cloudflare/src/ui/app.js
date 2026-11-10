@@ -137,11 +137,33 @@ class PlacesTrackerClient {
     }
   }
 
-  isGoogleTokenValid() {
-    if (!this.googleIdToken) return false;
-    const payload = this.decodeJwtPayload(this.googleIdToken);
-    if (!payload || !payload.email || !payload.exp) return false;
-    return payload.exp * 1000 > Date.now() + 30000;
+  isGoogleTokenValid(tokenOverride) {
+    if (!tokenOverride && !this.googleIdToken && window.PlacesAndroidAuth && typeof window.PlacesAndroidAuth.getSavedAuth === 'function') {
+      try {
+        const savedRaw = window.PlacesAndroidAuth.getSavedAuth();
+        if (savedRaw) {
+          const saved = JSON.parse(savedRaw);
+          if (saved && saved.idToken && saved.email) {
+            this.googleIdToken = saved.idToken;
+            this.userEmail = String(saved.email).trim().toLowerCase();
+            this.userId = this.normalizeUserId(this.userEmail);
+            localStorage.setItem('places_google_id_token', this.googleIdToken);
+            localStorage.setItem('places_user_email', this.userEmail);
+            localStorage.setItem('places_user_id', this.userId);
+          }
+        }
+      } catch (_) { }
+    }
+    const tok = tokenOverride || this.googleIdToken;
+    if (!tok) return false;
+    const payload = this.decodeJwtPayload(tok);
+    if (!payload || !payload.email) return false;
+    const issuedAtSec = Number(payload.iat || payload.exp || 0);
+    const ninetyDaysMs = 90 * 24 * 60 * 60 * 1000;
+    if (issuedAtSec > 0) {
+      return issuedAtSec * 1000 + ninetyDaysMs > Date.now();
+    }
+    return true;
   }
 
   ensureUsernamePrompt(initialError = '') {

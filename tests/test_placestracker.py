@@ -775,6 +775,96 @@ class TestPlacesTrackerSuite(unittest.TestCase):
         self.assertIn("this.suppressClickUntil = now + 550", app_js)
         self.assertIn("Date.now() < this.suppressClickUntil", app_js)
 
+    def test_10_eval_90_day_google_login_persistence(self):
+        """Eval: Verifies 90-day Google login session persistence across Web, Cloudflare Worker JWKS, and Android native auth."""
+        app_js_path = os.path.join(ROOT_DIR, "cloudflare", "src", "ui", "app.js")
+        router_js_path = os.path.join(ROOT_DIR, "cloudflare", "src", "controllers", "HttpRouter.js")
+        main_activity_path = os.path.join(
+            ROOT_DIR, "android", "app", "src", "main", "java", "com", "placestracker", "app", "MainActivity.kt"
+        )
+
+        with open(app_js_path, "r", encoding="utf-8") as f:
+            app_js = f.read()
+        with open(router_js_path, "r", encoding="utf-8") as f:
+            router_js = f.read()
+        with open(main_activity_path, "r", encoding="utf-8") as f:
+            main_activity_kt = f.read()
+
+        # 1. Backend Cloudflare Worker must verify RS256 Google JWTs with a 90-day session window from iat
+        self.assertIn("SESSION_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000", router_js)
+        self.assertIn("verifyGoogleJwtWithJwks", router_js)
+        self.assertIn("https://www.googleapis.com/oauth2/v3/certs", router_js)
+
+        # 2. Android MainActivity must persist saved_google_id_token & use silentSignIn + getSavedAuth bridge
+        self.assertIn("saved_google_id_token", main_activity_kt)
+        self.assertIn("fun getSavedAuth(): String", main_activity_kt)
+        self.assertIn("silentSignIn()", main_activity_kt)
+        self.assertIn("window.PlacesAndroidAuth.getSavedAuth", app_js)
+
+        # 3. Runtime JS eval: token issued 15 days ago (with 1h exp long past) must STILL be valid (< 90d),
+        #    while token issued 95 days ago must be rejected (> 90d).
+        cls_only = app_js.split("const app = new PlacesTrackerClient")[0]
+        harness = (
+            """
+            const elements = {};
+            const makeEl = (id) => ({
+              id, value: '', textContent: '', innerHTML: '', style: {}, className: '',
+              classList: { _set: new Set(), add(){}, remove(){}, toggle(){}, contains(){ return false; } },
+              addEventListener() {},
+              getBoundingClientRect() { return { width: 800, height: 460 }; }
+            });
+            globalThis.window = {
+              location: { hash: '', search: '', pathname: '/', reload() {} },
+              history: { pushState() {}, replaceState() {} },
+              addEventListener() {}
+            };
+            globalThis.document = {
+              getElementById(id) { if (!elements[id]) elements[id] = makeEl(id); return elements[id]; },
+              addEventListener() {}
+            };
+            globalThis.localStorage = { getItem() { return null; }, setItem() {}, removeItem() {} };
+            globalThis.sessionStorage = { getItem() { return null; }, setItem() {}, removeItem() {} };
+            globalThis.navigator = {};
+            globalThis.requestAnimationFrame = () => {};
+            globalThis.setTimeout = () => 1;
+            globalThis.clearTimeout = () => {};
+            if (typeof globalThis.atob === 'undefined') {
+              globalThis.atob = (b64) => Buffer.from(b64, 'base64').toString('binary');
+            }
+            if (typeof globalThis.btoa === 'undefined') {
+              globalThis.btoa = (bin) => Buffer.from(bin, 'binary').toString('base64');
+            }
+            """
+            + cls_only
+            + """
+            (() => {
+              const client = Object.create(PlacesTrackerClient.prototype);
+              const makeJwt = (iatSec) => {
+                const hdr = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+                const body = btoa(JSON.stringify({
+                  email: 'madhavsankar@gmail.com',
+                  iat: iatSec,
+                  exp: iatSec + 3600
+                }));
+                return hdr + '.' + body + '.sig';
+              };
+              const nowSec = Math.floor(Date.now() / 1000);
+              const token15DaysOld = makeJwt(nowSec - 15 * 24 * 3600);
+              const token95DaysOld = makeJwt(nowSec - 95 * 24 * 3600);
+
+              const out = JSON.stringify({
+                valid15Days: client.isGoogleTokenValid(token15DaysOld),
+                valid95Days: client.isGoogleTokenValid(token95DaysOld)
+              });
+              if (typeof console !== 'undefined' && console.log) console.log(out);
+              else if (typeof print !== 'undefined') print(out);
+            })();
+            """
+        )
+        res = run_js_eval(harness)
+        self.assertTrue(res["valid15Days"], "Token issued 15 days ago must remain valid for 90-day session persistence")
+        self.assertFalse(res["valid95Days"], "Token issued 95 days ago must expire after 90 days")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -12,6 +12,81 @@ import { GeminiAgentService } from "../services/GeminiAgentService.js";
 import { renderWebAppHtml } from "../ui/WebAppView.js";
 
 const VERIFIED_GOOGLE_TOKENS = new Map();
+const SESSION_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
+let GOOGLE_JWKS_CACHE = { keys: null, fetchedAt: 0 };
+
+function decodeBase64UrlBytes(b64url) {
+  const b64 = String(b64url || "")
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+  const padded = b64 + "===".slice((b64.length + 3) % 4);
+  const bin = atob(padded);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) {
+    out[i] = bin.charCodeAt(i);
+  }
+  return out;
+}
+
+function decodeBase64UrlJson(b64url) {
+  const bytes = decodeBase64UrlBytes(b64url);
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+async function verifyGoogleJwtWithJwks(token, expectedAud) {
+  const parts = String(token || "").split(".");
+  if (parts.length !== 3) return null;
+  const header = decodeBase64UrlJson(parts[0]);
+  const payload = decodeBase64UrlJson(parts[1]);
+  if (!header || header.alg !== "RS256" || !header.kid || !payload) return null;
+
+  const iss = String(payload.iss || "");
+  if (iss !== "https://accounts.google.com" && iss !== "accounts.google.com") {
+    return null;
+  }
+  if (expectedAud && payload.aud !== expectedAud) {
+    return { error: "Invalid Google OAuth client audience." };
+  }
+  if (!payload.email || String(payload.email_verified) !== "true") {
+    return { error: "Google account email is not verified." };
+  }
+
+  const iatSec = Number(payload.iat || payload.exp || 0);
+  const sessionExpMs = iatSec > 0 ? iatSec * 1000 + SESSION_MAX_AGE_MS : Date.now() + SESSION_MAX_AGE_MS;
+  if (sessionExpMs <= Date.now()) {
+    return { error: "Google session expired. Please sign in again." };
+  }
+
+  const now = Date.now();
+  if (!GOOGLE_JWKS_CACHE.keys || now - GOOGLE_JWKS_CACHE.fetchedAt > 6 * 3600 * 1000) {
+    const res = await fetch("https://www.googleapis.com/oauth2/v3/certs");
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.keys)) {
+        GOOGLE_JWKS_CACHE = { keys: data.keys, fetchedAt: now };
+      }
+    }
+  }
+  const jwk = (GOOGLE_JWKS_CACHE.keys || []).find((k) => k.kid === header.kid);
+  if (!jwk) return null;
+
+  const cryptoKey = await crypto.subtle.importKey(
+    "jwk",
+    jwk,
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["verify"]
+  );
+  const signedData = new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
+  const sigBytes = decodeBase64UrlBytes(parts[2]);
+  const valid = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", cryptoKey, sigBytes, signedData);
+  if (!valid) return null;
+
+  return {
+    email: String(payload.email).trim().toLowerCase(),
+    expMs: sessionExpMs,
+  };
+}
 
 export class HttpRouter {
   constructor(env) {
@@ -80,49 +155,61 @@ export class HttpRouter {
     if (cached && cached.expMs > Date.now()) {
       verifiedEmail = cached.email;
     } else {
+      const expectedAud = this._getGoogleClientId();
       try {
-        const res = await fetch(
-          `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`
-        );
-        if (!res.ok) {
+        // 1. Cryptographically verify Google RS256 JWT against Google JWKS with 90-day session lifetime
+        const jwksResult = await verifyGoogleJwtWithJwks(token, expectedAud);
+        if (jwksResult && jwksResult.error) {
+          return { ok: false, status: 401, error: jwksResult.error };
+        }
+        if (jwksResult && jwksResult.email) {
+          verifiedEmail = jwksResult.email;
+          VERIFIED_GOOGLE_TOKENS.set(token, {
+            email: verifiedEmail,
+            expMs: jwksResult.expMs,
+          });
+        }
+      } catch (_) {}
+
+      // 2. Fallback to oauth2.googleapis.com/tokeninfo if JWKS key rolled or wasn't matched
+      if (!verifiedEmail) {
+        try {
+          const res = await fetch(
+            `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`
+          );
+          if (!res.ok) {
+            return {
+              ok: false,
+              status: 401,
+              error: "Google session expired or invalid. Please sign in again.",
+            };
+          }
+          const info = await res.json();
+          if (expectedAud && info.aud !== expectedAud) {
+            return {
+              ok: false,
+              status: 401,
+              error: "Invalid Google OAuth client audience.",
+            };
+          }
+          if (String(info.email_verified) !== "true" || !info.email) {
+            return {
+              ok: false,
+              status: 401,
+              error: "Google account email is not verified.",
+            };
+          }
+          const iatMs = Number(info.iat || info.exp || 0) * 1000;
+          const sessionExpMs = iatMs > 0 ? iatMs + SESSION_MAX_AGE_MS : Date.now() + SESSION_MAX_AGE_MS;
+          verifiedEmail = String(info.email).trim().toLowerCase();
+          VERIFIED_GOOGLE_TOKENS.set(token, { email: verifiedEmail, expMs: sessionExpMs });
+        } catch (_) {
           return {
             ok: false,
             status: 401,
-            error: "Google session expired or invalid. Please sign in again.",
+            error: "Unable to verify Google token.",
           };
         }
-        const info = await res.json();
-        const expectedAud = this._getGoogleClientId();
-        if (expectedAud && info.aud !== expectedAud) {
-          return {
-            ok: false,
-            status: 401,
-            error: "Invalid Google OAuth client audience.",
-          };
-        }
-        if (String(info.email_verified) !== "true" || !info.email) {
-          return {
-            ok: false,
-            status: 401,
-            error: "Google account email is not verified.",
-          };
-        }
-        const expMs = Number(info.exp || 0) * 1000;
-        if (expMs <= Date.now()) {
-          return {
-            ok: false,
-            status: 401,
-            error: "Google session expired. Please sign in again.",
-          };
-        }
-        verifiedEmail = String(info.email).trim().toLowerCase();
-        VERIFIED_GOOGLE_TOKENS.set(token, { email: verifiedEmail, expMs });
-      } catch (_) {
-        return {
-          ok: false,
-          status: 401,
-          error: "Unable to verify Google token.",
-        };
       }
     }
 
