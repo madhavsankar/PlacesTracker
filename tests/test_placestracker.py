@@ -776,7 +776,7 @@ class TestPlacesTrackerSuite(unittest.TestCase):
         self.assertIn("Date.now() < this.suppressClickUntil", app_js)
 
     def test_10_eval_90_day_google_login_persistence(self):
-        """Eval: Verifies 90-day Google login session persistence across Web, Cloudflare Worker JWKS, and Android native auth."""
+        """Eval: Verifies 10-year (until explicit Sign Out) login session persistence across Web, Worker HMAC-SHA256, and Android."""
         app_js_path = os.path.join(ROOT_DIR, "cloudflare", "src", "ui", "app.js")
         router_js_path = os.path.join(ROOT_DIR, "cloudflare", "src", "controllers", "HttpRouter.js")
         main_activity_path = os.path.join(
@@ -790,19 +790,22 @@ class TestPlacesTrackerSuite(unittest.TestCase):
         with open(main_activity_path, "r", encoding="utf-8") as f:
             main_activity_kt = f.read()
 
-        # 1. Backend Cloudflare Worker must verify RS256 Google JWTs with a 90-day session window from iat
-        self.assertIn("SESSION_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000", router_js)
+        # 1. Backend Cloudflare Worker must mint and verify 10-year HMAC-SHA256 session tokens + JWKS
+        self.assertIn("SESSION_MAX_AGE_MS = 3650 * 24 * 60 * 60 * 1000", router_js)
+        self.assertIn("mintWorkerSessionToken", router_js)
+        self.assertIn("verifyWorkerSessionToken", router_js)
         self.assertIn("verifyGoogleJwtWithJwks", router_js)
-        self.assertIn("https://www.googleapis.com/oauth2/v3/certs", router_js)
 
-        # 2. Android MainActivity must persist saved_google_id_token & use silentSignIn + getSavedAuth bridge
+        # 2. Android MainActivity must persist saved_google_id_token & use silentSignIn + getSavedAuth + saveSessionToken
         self.assertIn("saved_google_id_token", main_activity_kt)
         self.assertIn("fun getSavedAuth(): String", main_activity_kt)
+        self.assertIn("fun saveSessionToken(", main_activity_kt)
         self.assertIn("silentSignIn()", main_activity_kt)
         self.assertIn("window.PlacesAndroidAuth.getSavedAuth", app_js)
+        self.assertIn("window.PlacesAndroidAuth.saveSessionToken", app_js)
 
-        # 3. Runtime JS eval: token issued 15 days ago (with 1h exp long past) must STILL be valid (< 90d),
-        #    while token issued 95 days ago must be rejected (> 90d).
+        # 3. Runtime JS eval: token issued 2 years (730 days) ago must STILL be valid (< 10y),
+        #    while token issued 11 years (4015 days) ago must be rejected (> 10y).
         cls_only = app_js.split("const app = new PlacesTrackerClient")[0]
         harness = (
             """
@@ -840,21 +843,22 @@ class TestPlacesTrackerSuite(unittest.TestCase):
             (() => {
               const client = Object.create(PlacesTrackerClient.prototype);
               const makeJwt = (iatSec) => {
-                const hdr = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+                const hdr = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
                 const body = btoa(JSON.stringify({
+                  iss: 'worker-session',
                   email: 'madhavsankar@gmail.com',
                   iat: iatSec,
-                  exp: iatSec + 3600
+                  exp: iatSec + 3650 * 86400
                 }));
                 return hdr + '.' + body + '.sig';
               };
               const nowSec = Math.floor(Date.now() / 1000);
-              const token15DaysOld = makeJwt(nowSec - 15 * 24 * 3600);
-              const token95DaysOld = makeJwt(nowSec - 95 * 24 * 3600);
+              const token2YearsOld = makeJwt(nowSec - 730 * 24 * 3600);
+              const token11YearsOld = makeJwt(nowSec - 4015 * 24 * 3600);
 
               const out = JSON.stringify({
-                valid15Days: client.isGoogleTokenValid(token15DaysOld),
-                valid95Days: client.isGoogleTokenValid(token95DaysOld)
+                valid2Years: client.isGoogleTokenValid(token2YearsOld),
+                valid11Years: client.isGoogleTokenValid(token11YearsOld)
               });
               if (typeof console !== 'undefined' && console.log) console.log(out);
               else if (typeof print !== 'undefined') print(out);
@@ -862,8 +866,8 @@ class TestPlacesTrackerSuite(unittest.TestCase):
             """
         )
         res = run_js_eval(harness)
-        self.assertTrue(res["valid15Days"], "Token issued 15 days ago must remain valid for 90-day session persistence")
-        self.assertFalse(res["valid95Days"], "Token issued 95 days ago must expire after 90 days")
+        self.assertTrue(res["valid2Years"], "Token issued 2 years ago must remain valid for 10-year session persistence")
+        self.assertFalse(res["valid11Years"], "Token issued 11 years ago must expire after 10 years")
 
 
 if __name__ == "__main__":

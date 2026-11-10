@@ -159,9 +159,9 @@ class PlacesTrackerClient {
     const payload = this.decodeJwtPayload(tok);
     if (!payload || !payload.email) return false;
     const issuedAtSec = Number(payload.iat || payload.exp || 0);
-    const ninetyDaysMs = 90 * 24 * 60 * 60 * 1000;
+    const tenYearsMs = 3650 * 24 * 60 * 60 * 1000;
     if (issuedAtSec > 0) {
-      return issuedAtSec * 1000 + ninetyDaysMs > Date.now();
+      return issuedAtSec * 1000 + tenYearsMs > Date.now();
     }
     return true;
   }
@@ -767,6 +767,16 @@ class PlacesTrackerClient {
         return this.bootstrapState(isBackgroundSync);
       }
       const data = await res.json();
+      if (data.session_token && data.session_token !== this.googleIdToken) {
+        this.googleIdToken = data.session_token;
+        localStorage.setItem('places_google_id_token', this.googleIdToken);
+        try {
+          if (window.PlacesAndroidAuth && typeof window.PlacesAndroidAuth.saveSessionToken === 'function') {
+            window.PlacesAndroidAuth.saveSessionToken(this.googleIdToken, this.userEmail || '');
+          }
+        } catch (_) { }
+        this.updateUserUI();
+      }
       const serverPlaces = data.places || [];
       const toPushVisited = [];
       const toPushDream = [];

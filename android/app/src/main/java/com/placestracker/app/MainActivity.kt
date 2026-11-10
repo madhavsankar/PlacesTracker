@@ -137,6 +137,20 @@ class MainActivity : AppCompatActivity() {
         }
 
         @JavascriptInterface
+        fun saveSessionToken(token: String?, email: String?) {
+            val cleanToken = token?.trim().orEmpty()
+            val cleanEmail = email?.trim()?.lowercase().orEmpty()
+            if (cleanToken.isNotEmpty()) {
+                val editor = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+                    .putString(KEY_SAVED_ID_TOKEN, cleanToken)
+                if (cleanEmail.isNotEmpty()) {
+                    editor.putString(KEY_SAVED_EMAIL, cleanEmail)
+                }
+                editor.apply()
+            }
+        }
+
+        @JavascriptInterface
         fun signOut() {
             getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit()
