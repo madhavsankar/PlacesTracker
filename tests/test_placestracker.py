@@ -5,11 +5,15 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import unittest
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC_DIR = os.path.join(ROOT_DIR, "src")
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
 
 
 def run_js_eval(js_code: str) -> dict:
@@ -470,7 +474,7 @@ class TestPlacesTrackerSuite(unittest.TestCase):
             };
             globalThis.localStorage = { getItem() { return null; }, setItem() {}, removeItem() {} };
             globalThis.sessionStorage = { getItem() { return null; }, setItem() {}, removeItem() {} };
-            globalThis.navigator = {};
+            try { Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true, writable: true }); } catch (_) {}
             globalThis.requestAnimationFrame = (fn) => fn();
             globalThis.setTimeout = (fn) => { fn(); return 1; };
             globalThis.clearTimeout = () => {};
@@ -731,7 +735,7 @@ class TestPlacesTrackerSuite(unittest.TestCase):
             };
             globalThis.localStorage = { getItem() { return null; }, setItem() {}, removeItem() {} };
             globalThis.sessionStorage = { getItem() { return null; }, setItem() {}, removeItem() {} };
-            globalThis.navigator = {};
+            try { Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true, writable: true }); } catch (_) {}
             globalThis.requestAnimationFrame = (fn) => fn();
             globalThis.setTimeout = (fn) => { fn(); return 1; };
             globalThis.clearTimeout = () => {};
@@ -837,7 +841,7 @@ class TestPlacesTrackerSuite(unittest.TestCase):
             };
             globalThis.localStorage = { getItem() { return null; }, setItem() {}, removeItem() {} };
             globalThis.sessionStorage = { getItem() { return null; }, setItem() {}, removeItem() {} };
-            globalThis.navigator = {};
+            try { Object.defineProperty(globalThis, 'navigator', { value: {}, configurable: true, writable: true }); } catch (_) {}
             globalThis.requestAnimationFrame = () => {};
             globalThis.setTimeout = () => 1;
             globalThis.clearTimeout = () => {};
