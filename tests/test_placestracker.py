@@ -923,6 +923,58 @@ class TestPlacesTrackerSuite(unittest.TestCase):
         self.assertIn("isEnabled = false", main_activity_kt)
         self.assertIn("onBackPressedDispatcher.onBackPressed()", main_activity_kt)
 
+    def test_12_eval_mcp_tools_annotations_license_and_execution(self):
+        """Eval: Verifies LICENSE file, M8ven badge, all 4 boolean hints on every MCP tool, and end-to-end execution of all 7 MCP tools."""
+        import tempfile
+        from mcp_server import McpJsonRpcProcessor
+        from db import PlacesDB
+
+        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        license_path = os.path.join(root_dir, "LICENSE")
+        readme_path = os.path.join(root_dir, "README.md")
+        self.assertTrue(os.path.exists(license_path), "LICENSE file must exist at repository root")
+        with open(license_path, "r", encoding="utf-8") as f:
+            self.assertIn("MIT License", f.read())
+        with open(readme_path, "r", encoding="utf-8") as f:
+            self.assertIn("https://m8ven.ai/badge/mcp/madhavsankar-placestracker-udg977", f.read())
+
+        required_hints = ("readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db = PlacesDB(os.path.join(tmpdir, "mcp_test.db"))
+            proc = McpJsonRpcProcessor(db)
+
+            tools_resp = proc.process_message({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+            tools = tools_resp["result"]["tools"]
+            self.assertEqual(len(tools), 7)
+            for tool in tools:
+                ann = tool.get("annotations", {})
+                for hint in required_hints:
+                    self.assertIn(hint, ann, f"Tool {tool['name']} missing {hint}")
+                    self.assertIsInstance(ann[hint], bool, f"Tool {tool['name']} hint {hint} must be boolean")
+
+            # Exercise all 7 declared MCP tools end-to-end
+            dashboard_out = os.path.join(tmpdir, "dash.html")
+            tool_calls = [
+                ("places_mark", {"places": ["Kyoto", "Zion National Park"], "status": "visited"}),
+                ("places_stats", {}),
+                ("places_search", {"query": "Kyoto", "status": "visited"}),
+                ("places_recommend", {"destination": "Japan"}),
+                ("places_add_custom", {"name": "Hidden Falls", "category": "national_park", "country_code": "US", "state_code": "WA"}),
+                ("places_render_dashboard", {"output_path": dashboard_out}),
+                ("places_csv", {"action": "export"}),
+            ]
+            for idx, (tool_name, args) in enumerate(tool_calls, start=2):
+                resp = proc.process_message({
+                    "jsonrpc": "2.0",
+                    "id": idx,
+                    "method": "tools/call",
+                    "params": {"name": tool_name, "arguments": args},
+                })
+                self.assertFalse(resp["result"]["isError"], f"MCP tool {tool_name} failed: {resp}")
+                payload = json.loads(resp["result"]["content"][0]["text"])
+                self.assertIsInstance(payload, dict)
+            self.assertTrue(os.path.exists(dashboard_out))
+
 
 if __name__ == "__main__":
     unittest.main()

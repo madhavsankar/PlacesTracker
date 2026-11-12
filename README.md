@@ -1,5 +1,7 @@
 # 🌍 PlacesTracker
 
+[![M8ven Score](https://m8ven.ai/badge/mcp/madhavsankar-placestracker-udg977?v=53dfc3e8af2f452efad60ab6a487d7df)](https://m8ven.ai/mcp/madhavsankar-placestracker-udg977?s=readme)
+
 <p align="left">
   <img src="assets/app_icon.svg" width="96" height="96" alt="PlacesTracker App Icon" />
 </p>
