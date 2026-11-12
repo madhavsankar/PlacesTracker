@@ -429,8 +429,13 @@ class PlacesTrackerClient {
       this.exitDrillDown(true);
       return true;
     }
-    if (this.activeSection === 'statistics' && this.activeStatsCircle) {
+    if (this.activeSection === 'statistics' && this.activeStatsCircle && this.userSelectedStatsCircle) {
+      this.userSelectedStatsCircle = false;
       this.selectStatsCircle(this.activeStatsCircle);
+      return true;
+    }
+    if (this.activeSection === 'settings') {
+      this.toggleSettingsDrawer(false);
       return true;
     }
     if (this.activeSection && this.activeSection !== 'home') {
@@ -1209,7 +1214,12 @@ class PlacesTrackerClient {
     }
     if (airportEl) {
       const visA = this.countByCat('airport', 'visited');
-      airportEl.textContent = String(visA);
+      const wantA = this.countByCat('airport', 'bucket_list');
+      airportEl.innerHTML =
+        '<span class="text-cyan-400">' +
+        visA +
+        '</span>' +
+        (wantA > 0 ? ' <span class="text-amber-400">' + wantA + '</span>' : '');
     }
   }
 
@@ -1268,7 +1278,7 @@ class PlacesTrackerClient {
         radius: isVis ? 5.0 : isWant ? 4.5 : 3.5,
         color: '#0f172a',
         weight: 1.2,
-        fillColor: isVis ? '#0284c7' : isWant ? '#f59e0b' : '#ffffff',
+        fillColor: isVis ? (this.visitedColor || '#0284c7') : isWant ? (this.dreamColor || '#f59e0b') : '#ffffff',
         fillOpacity: 0.9,
       }).addTo(this.homePinsLayer);
     }
@@ -1297,7 +1307,10 @@ class PlacesTrackerClient {
     };
 
     const matchesStatus = (p) => {
+      if (statusFilter === 'all') return true;
       if (statusFilter === 'visited') return p.status === 'visited';
+      if (statusFilter === 'bucket_list') return p.status === 'bucket_list';
+      if (statusFilter === 'unvisited') return !p.status || p.status === 'unvisited';
       return p.status !== 'visited';
     };
 
@@ -1312,7 +1325,7 @@ class PlacesTrackerClient {
     // When a search query is typed, search across all places globally;
     // otherwise filter to places matching the status filter within the zoomed map viewport!
     const items = this.places.filter((p) => {
-      if (q.length >= 2) {
+      if (q.length >= 1) {
         if (this.isParentCategory(p.category) && cat !== 'country') return false;
         return matchesQuery(p);
       }
@@ -1334,7 +1347,7 @@ class PlacesTrackerClient {
     const clientCityLower = ((this.clientGeo && this.clientGeo.city) || '').trim().toLowerCase();
 
     items.sort((a, b) => {
-      if (q.length >= 2) {
+      if (q.length >= 1) {
         const aStarts = a.name.toLowerCase().startsWith(q) ? 0 : 1;
         const bStarts = b.name.toLowerCase().startsWith(q) ? 0 : 1;
         if (aStarts !== bStarts) return aStarts - bStarts;
@@ -1354,7 +1367,7 @@ class PlacesTrackerClient {
     });
 
     if (countLbl) {
-      countLbl.textContent = '(' + items.length + ' in view)';
+      countLbl.textContent = '(' + items.length + (q.length >= 1 ? ' matching)' : ' in view)');
     }
 
     this.updateViewportDetailPins(items);
@@ -1716,10 +1729,16 @@ class PlacesTrackerClient {
     if (countryObj.country_code === 'CA') {
       this.regionalLayerFilter = 'none';
     } else {
+      const hasVisNP = this.places.some(
+        (p) => p.country_code === countryObj.country_code && p.category === 'national_park' && p.status === 'visited'
+      );
+      const hasVisCity = this.places.some(
+        (p) => p.country_code === countryObj.country_code && p.category === 'city' && p.status === 'visited'
+      );
       const hasNP = this.places.some(
         (p) => p.country_code === countryObj.country_code && p.category === 'national_park'
       );
-      this.regionalLayerFilter = hasNP ? 'national_park' : 'city';
+      this.regionalLayerFilter = hasVisNP ? 'national_park' : hasVisCity ? 'city' : hasNP ? 'national_park' : 'city';
     }
     this.focusedCountry = { place: countryObj, feature: feat };
     this.regionalMode = 'country_focus';
@@ -1732,10 +1751,16 @@ class PlacesTrackerClient {
     this.pushAppHistory('visited_map/state/' + (stateObj.state_code || stateObj.id));
     this.showMobileToast((stateObj.flag_emoji || '📍') + ' ' + stateObj.name);
     if (!this.regionalLayerFilter || this.regionalLayerFilter === 'none') {
+      const hasVisNP = this.places.some(
+        (p) => p.state_code === stateObj.state_code && p.category === 'national_park' && p.status === 'visited'
+      );
+      const hasVisCity = this.places.some(
+        (p) => p.state_code === stateObj.state_code && p.category === 'city' && p.status === 'visited'
+      );
       const hasNP = this.places.some(
         (p) => p.state_code === stateObj.state_code && p.category === 'national_park'
       );
-      this.regionalLayerFilter = hasNP ? 'national_park' : 'city';
+      this.regionalLayerFilter = hasVisNP ? 'national_park' : hasVisCity ? 'city' : hasNP ? 'national_park' : 'city';
     }
     this.focusedState = {
       place: stateObj,
@@ -2094,23 +2119,30 @@ class PlacesTrackerClient {
   }
 
   renderLeafActionButtons(p) {
+    const safeId = String(p.id || '').replace(/'/g, "\\'");
     if (p.status === 'visited') {
       return (
         '<div class="flex items-center gap-1 shrink-0">' +
-        '<span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">✓ Visited</span>' +
+        '<button type="button" onclick="event.stopPropagation(); app.cyclePlaceStatus(\'' +
+        safeId +
+        '\')" class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-95 text-emerald-300 border border-emerald-500/40 transition">✓ Visited</button>' +
         '</div>'
       );
     }
     if (p.status === 'bucket_list') {
       return (
         '<div class="flex items-center gap-1 shrink-0">' +
-        '<span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40">🎯 Want to Go</span>' +
+        '<button type="button" onclick="event.stopPropagation(); app.cyclePlaceStatus(\'' +
+        safeId +
+        '\')" class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 text-amber-300 border border-amber-500/40 transition">🎯 Want to Go</button>' +
         '</div>'
       );
     }
     return (
       '<div class="flex items-center gap-1 shrink-0">' +
-      '<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-400 border border-slate-700/80">Not Visited</span>' +
+      '<button type="button" onclick="event.stopPropagation(); app.cyclePlaceStatus(\'' +
+      safeId +
+      '\')" class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 active:scale-95 text-slate-400 border border-slate-700/80 transition">Not Visited</button>' +
       '</div>'
     );
   }
@@ -2271,12 +2303,18 @@ class PlacesTrackerClient {
   }
 
   getCapitalPlaces() {
+    const normStr = (s) =>
+      String(s || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
     const countries = this.places.filter((p) => p.category === 'country');
     const cities = this.places.filter((p) => p.category === 'city');
     const cityByCountryAndName = {};
     cities.forEach((c) => {
-      const k = (c.country_code || '') + ':' + c.name.toLowerCase();
-      cityByCountryAndName[k] = c;
+      const k = (c.country_code || '') + ':' + normStr(c.name);
+      if (!cityByCountryAndName[k]) cityByCountryAndName[k] = c;
     });
 
     const out = [];
@@ -2286,15 +2324,17 @@ class PlacesTrackerClient {
       if (!m) return;
       const capName = m[1].trim();
       if (!capName) return;
-      const k = (co.country_code || '') + ':' + capName.toLowerCase();
+      const capNorm = normStr(capName);
+      const k = (co.country_code || '') + ':' + capNorm;
       const matchedCity =
         cityByCountryAndName[k] ||
+        cities.find((c) => c.country_code === co.country_code && normStr(c.name) === capNorm) ||
         cities.find(
           (c) =>
             c.country_code === co.country_code &&
-            (c.name.toLowerCase() === capName.toLowerCase() ||
-              c.name.toLowerCase().includes(capName.toLowerCase()) ||
-              capName.toLowerCase().includes(c.name.toLowerCase()))
+            (normStr(c.name).startsWith(capNorm + ',') ||
+              normStr(c.name).startsWith(capNorm + ' ') ||
+              capNorm.startsWith(normStr(c.name) + ' '))
         );
       if (matchedCity) {
         out.push({
@@ -2309,7 +2349,7 @@ class PlacesTrackerClient {
           flag_emoji: co.flag_emoji || '🏛️',
           continent: co.continent,
           country_code: co.country_code,
-          status: co.status || 'unvisited',
+          status: 'unvisited',
           subText: 'Capital of ' + co.name,
           isLeaf: false,
           rawAddName: capName + ', ' + co.name,
@@ -2363,12 +2403,7 @@ class PlacesTrackerClient {
     }
 
     const mySearchEl = document.getElementById('my-places-search');
-    const topSearchEl = document.getElementById('top-search-input');
-    const q = (
-      ((mySearchEl && mySearchEl.value) || (topSearchEl && topSearchEl.value) || '')
-    )
-      .trim()
-      .toLowerCase();
+    const q = ((mySearchEl && mySearchEl.value) || '').trim().toLowerCase();
 
     const continentsOrder = [
       { name: 'Asia', icon: '🌏' },
@@ -2948,8 +2983,10 @@ class PlacesTrackerClient {
   selectStatsCircle(key) {
     if (this.activeStatsCircle === key) {
       this.activeStatsCircle = null;
+      this.userSelectedStatsCircle = false;
     } else {
       this.activeStatsCircle = key;
+      this.userSelectedStatsCircle = true;
       this.statsCircleStatusFilter = 'all';
       this.statsCircleSearch = '';
     }
@@ -3176,7 +3213,7 @@ class PlacesTrackerClient {
     }
 
     const makeDonut = (key, label, vis, tot, colorHex) => {
-      const pct = tot > 0 ? Math.min(100, Math.round((vis / tot) * 100)) : 100;
+      const pct = tot > 0 ? Math.min(100, Math.round((vis / tot) * 100)) : 0;
       const r = 30;
       const circ = 2 * Math.PI * r;
       const dash = (pct / 100) * circ;
@@ -3495,8 +3532,13 @@ class PlacesTrackerClient {
         pillEl.textContent = vis + ' / ' + tot + ' Visited';
       } else if (mode === 'state_focus' && this.focusedState) {
         const st = this.focusedState.place;
-        const allInState = this.filterRegionalPlaces(
-          this.places.filter((p) => p.state_code === st.state_code && p.id !== st.id)
+        const layer = this.regionalLayerFilter || 'none';
+        const allInState = this.places.filter(
+          (p) =>
+            p.state_code === st.state_code &&
+            p.id !== st.id &&
+            !this.isParentCategory(p.category) &&
+            (layer === 'none' || p.category === layer)
         );
         const visInState = allInState.filter((p) => p.status === 'visited').length;
         pillEl.textContent = st.name + ': ' + visInState + ' / ' + allInState.length + ' Visited';
@@ -3507,8 +3549,13 @@ class PlacesTrackerClient {
           const tot = this.countByCat('canadian_province') || 13;
           pillEl.textContent = vis + ' / ' + tot + ' Visited';
         } else {
-          const allInCo = this.filterRegionalPlaces(
-            this.places.filter((p) => p.country_code === co.country_code && p.id !== co.id)
+          const layer = this.regionalLayerFilter || 'none';
+          const allInCo = this.places.filter(
+            (p) =>
+              p.country_code === co.country_code &&
+              p.id !== co.id &&
+              !this.isParentCategory(p.category) &&
+              (layer === 'none' || p.category === layer)
           );
           const visInCo = allInCo.filter((p) => p.status === 'visited').length;
           pillEl.textContent = co.name + ': ' + visInCo + ' / ' + allInCo.length + ' Visited';
@@ -3537,7 +3584,15 @@ class PlacesTrackerClient {
           (f) => ((f.properties && f.properties.name) || '') !== 'Antarctica'
         ),
       };
-      const projection = d3.geoMercator().fitSize([W, H], mainContinentsGeo);
+      const projSelEl = document.getElementById('map-proj-select');
+      const projMode = (projSelEl && projSelEl.value) || 'mercator';
+      const baseProj =
+        projMode === 'naturalEarth' && typeof d3.geoNaturalEarth1 === 'function'
+          ? d3.geoNaturalEarth1()
+          : projMode === 'equalEarth' && typeof d3.geoEqualEarth === 'function'
+            ? d3.geoEqualEarth()
+            : d3.geoMercator();
+      const projection = baseProj.fitSize([W, H], mainContinentsGeo);
       const pathGen = d3.geoPath().projection(projection);
 
       g.append('path')
@@ -4418,6 +4473,15 @@ class PlacesTrackerClient {
       this.lastGeminiAlreadyMarkedCount = Number(data.already_marked_count || 0);
       this.lastGeminiUnresolved = data.unresolved || [];
 
+      if (Array.isArray(data.updated) && data.updated.length > 0) {
+        const byId = new Map(this.places.map((p) => [p.id, p]));
+        for (const u of data.updated) {
+          if (u && u.id && byId.has(u.id)) {
+            byId.get(u.id).status = u.status || 'unvisited';
+          }
+        }
+        this.saveLocalBackup();
+      }
       if (Array.isArray(data.activity_log)) {
         this.activityLog = data.activity_log;
       }

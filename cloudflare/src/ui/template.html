@@ -167,10 +167,12 @@
         <div class="bg-emerald-950/60 border-y border-emerald-500/25 px-2.5 py-2 flex flex-wrap items-center justify-between gap-2">
           <div class="flex items-center gap-1.5 min-w-0 flex-1">
             <span class="text-xs text-emerald-400 shrink-0">🎛️</span>
-            <!-- Status Filter for Viewport List (Visited Only default vs Unvisited Only) -->
+            <!-- Status Filter for Viewport List (Visited Only default, Want to Go, Unvisited Only, All) -->
             <select id="home-status-filter" onchange="app.onHomeSubfilterChange()" class="h-7 max-w-[128px] sm:max-w-none bg-slate-900/95 text-slate-100 border border-white/15 rounded-lg px-2 text-[11px] font-medium focus:outline-none shrink-0">
               <option value="visited" selected>Visited Only</option>
+              <option value="bucket_list">Want to Go</option>
               <option value="unvisited">Unvisited Only</option>
+              <option value="all">All Places</option>
             </select>
             <span id="viewport-count-label" class="text-[11px] text-slate-400 truncate"></span>
           </div>
@@ -319,7 +321,7 @@
             <span class="text-base">⚙️</span>
             <h2 class="text-sm font-bold text-white">Settings, Map Colors & Cloud Profile</h2>
           </div>
-          <button type="button" onclick="app.openSection('home')" class="px-3 py-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold">Done</button>
+          <button type="button" onclick="app.toggleSettingsDrawer(false)" class="px-3 py-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold">Done</button>
         </div>
 
         <!-- 1. Cloud Sync Profile -->
@@ -378,7 +380,7 @@
         <!-- 3. World Map Projection -->
         <div class="space-y-2">
           <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">🌐 World Map Projection</h3>
-          <select id="map-proj-select" onchange="app.drawWorldMap(true)" class="w-full bg-slate-900 text-slate-200 border border-white/10 rounded-xl px-3 py-2.5 text-xs">
+          <select id="map-proj-select" onchange="app.drawUSVectorMap(true)" class="w-full bg-slate-900 text-slate-200 border border-white/10 rounded-xl px-3 py-2.5 text-xs">
             <option value="mercator" selected>Mercator (Flat Map)</option>
             <option value="naturalEarth">Natural Earth</option>
             <option value="equalEarth">Equal Earth</option>

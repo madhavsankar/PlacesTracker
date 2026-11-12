@@ -658,17 +658,22 @@ export class CatalogService {
       .replace(/[^a-z0-9]+/g, "_");
     const cc = String(args.country_code || "").toUpperCase();
     const pid = `custom:${args.category || "city"}:${slug}`;
+    const countryEntry = DEFAULT_CATALOG.find(
+      (p) => p.category === "country" && String(p.country_code || "").toUpperCase() === cc
+    );
+    const resolvedContinent =
+      args.continent || (countryEntry && countryEntry.continent) || "North America";
     const customItem = {
       id: pid,
       name: args.name,
       category: args.category || "city",
       country_code: cc,
       state_code: String(args.state_code || "").toUpperCase(),
-      continent: "Custom",
-      subregion: "Custom Place",
+      continent: resolvedContinent,
+      subregion: (countryEntry && countryEntry.name) || "Custom Place",
       lat: Number(args.lat || 0),
       lng: Number(args.lng || 0),
-      flag_emoji: isoToFlag(cc),
+      flag_emoji: (countryEntry && countryEntry.flag_emoji) || isoToFlag(cc),
       description: args.description || `Custom ${args.category || "city"}`,
     };
     userState.custom_catalog = (userState.custom_catalog || []).filter((x) => x.id !== pid);

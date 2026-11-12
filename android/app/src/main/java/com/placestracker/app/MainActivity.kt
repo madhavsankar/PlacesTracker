@@ -394,7 +394,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         webView.setDownloadListener { url, _, _, _, _ ->
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            } catch (_: Exception) { }
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -405,13 +407,9 @@ class MainActivity : AppCompatActivity() {
                     if (result == "true") {
                         return@evaluateJavascript
                     }
-                    if (webView.canGoBack()) {
-                        webView.goBack()
-                    } else {
-                        isEnabled = false
-                        onBackPressedDispatcher.onBackPressed()
-                        isEnabled = true
-                    }
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
                 }
             }
         })

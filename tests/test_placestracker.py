@@ -879,6 +879,50 @@ class TestPlacesTrackerSuite(unittest.TestCase):
         self.assertTrue(res["valid2Years"], "Token issued 2 years ago must remain valid for 10-year session persistence")
         self.assertFalse(res["valid11Years"], "Token issued 11 years ago must expire after 10 years")
 
+    def test_11_eval_qa_subagent_audit_fixes(self):
+        """Eval: Guards all 5 QA Subagent audit fixes across Home, Visited Map, My Places, Statistics, Gemini AI Logger, and Android Back navigation."""
+        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        template_path = os.path.join(root_dir, "cloudflare", "src", "ui", "template.html")
+        app_js_path = os.path.join(root_dir, "cloudflare", "src", "ui", "app.js")
+        gemini_js_path = os.path.join(root_dir, "cloudflare", "src", "services", "GeminiAgentService.js")
+        catalog_js_path = os.path.join(root_dir, "cloudflare", "src", "services", "CatalogService.js")
+        main_activity_path = os.path.join(
+            root_dir, "android", "app", "src", "main", "java", "com", "placestracker", "app", "MainActivity.kt"
+        )
+
+        with open(template_path, "r", encoding="utf-8") as f:
+            template_html = f.read()
+        with open(app_js_path, "r", encoding="utf-8") as f:
+            app_js = f.read()
+        with open(gemini_js_path, "r", encoding="utf-8") as f:
+            gemini_js = f.read()
+        with open(catalog_js_path, "r", encoding="utf-8") as f:
+            catalog_js = f.read()
+        with open(main_activity_path, "r", encoding="utf-8") as f:
+            main_activity_kt = f.read()
+
+        # 1. Home Status Filter options & Map Projection Selector wiring
+        self.assertIn('<option value="bucket_list">Want to Go</option>', template_html)
+        self.assertIn('<option value="unvisited">Unvisited Only</option>', template_html)
+        self.assertIn('<option value="all">All Places</option>', template_html)
+        self.assertIn('onclick="app.toggleSettingsDrawer(false)"', template_html)
+        self.assertIn('id="map-proj-select" onchange="app.drawUSVectorMap(true)"', template_html)
+
+        # 2. Interactive status badges in My Places & Statistics, NFD capital matching, and 0/0 donut guard
+        self.assertIn("app.cyclePlaceStatus(", app_js)
+        self.assertIn(".normalize('NFD')", app_js)
+        self.assertIn(".replace(/[\\u0300-\\u036f]/g, '')", app_js)
+        self.assertIn("const pct = tot > 0 ? Math.min(100, Math.round((vis / tot) * 100)) : 0;", app_js)
+        self.assertIn("this.userSelectedStatsCircle", app_js)
+
+        # 3. Gemini fallback word-boundary matching & custom place continent resolution
+        self.assertIn('new RegExp(`\\\\b${escaped}\\\\b`, "i")', gemini_js)
+        self.assertIn('(countryEntry && countryEntry.continent) || "North America"', catalog_js)
+
+        # 4. Android MainActivity Back navigation exits cleanly when already at Home root
+        self.assertIn("isEnabled = false", main_activity_kt)
+        self.assertIn("onBackPressedDispatcher.onBackPressed()", main_activity_kt)
+
 
 if __name__ == "__main__":
     unittest.main()

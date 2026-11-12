@@ -251,6 +251,7 @@ export class GeminiAgentService {
         }
       }
 
+      const baseNameCandidates = new Map();
       for (const item of leafCatalog) {
         if (item.category === "airport" && item.iata_code) {
           const iataRegex = new RegExp(`\\b${item.iata_code}\\b`);
@@ -260,12 +261,30 @@ export class GeminiAgentService {
           }
         }
         const nm = item.name.toLowerCase();
+        const escapedNm = nm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const baseNm = nm.replace(/,\s*[a-z]{2}$/i, "").trim();
-        if (nm.length >= 3 && cl.includes(nm)) {
-          target.push(item.id);
-        } else if (baseNm.length >= 4 && new RegExp(`\\b${baseNm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(cl)) {
-          target.push(item.id);
+        if (nm.length >= 3 && new RegExp(`\\b${escapedNm}\\b`, "i").test(cl)) {
+          if (nm !== baseNm) {
+            // Exact match including state suffix (e.g. "Portland, OR")
+            target.push(item.id);
+          } else {
+            const prev = baseNameCandidates.get(baseNm);
+            if (!prev || (Number(item.population || 0) > Number(prev.population || 0))) {
+              baseNameCandidates.set(baseNm, item);
+            }
+          }
+        } else if (
+          baseNm.length >= 4 &&
+          new RegExp(`\\b${baseNm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(cl)
+        ) {
+          const prev = baseNameCandidates.get(baseNm);
+          if (!prev || (Number(item.population || 0) > Number(prev.population || 0))) {
+            baseNameCandidates.set(baseNm, item);
+          }
         }
+      }
+      for (const bestItem of baseNameCandidates.values()) {
+        target.push(bestItem.id);
       }
 
       // Also check comma-separated tokens for direct resolution
