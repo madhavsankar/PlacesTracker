@@ -496,18 +496,28 @@ class PlacesTrackerClient {
   toggleNavDrawer(show) {
     const drawer = document.getElementById('nav-drawer');
     if (!drawer) return;
-    drawer.classList.toggle('hidden', !show);
-    if (show) {
+    const isCurrentlyOpen = !drawer.classList.contains('hidden');
+    const nextShow = show !== undefined ? Boolean(show) : !isCurrentlyOpen;
+    drawer.classList.toggle('hidden', !nextShow);
+    if (nextShow) {
       this.updateUserUI();
       this.pushAppHistory('drawer');
     }
   }
 
   toggleSettingsDrawer(show) {
-    if (show) {
+    const shouldOpen = show !== undefined ? Boolean(show) : this.activeSection !== 'settings';
+    if (shouldOpen) {
+      if (this.activeSection && this.activeSection !== 'settings') {
+        this.previousNonSettingsSection = this.activeSection;
+      }
       this.openSection('settings');
     } else {
-      this.openSection('home');
+      const target =
+        this.previousNonSettingsSection && this.previousNonSettingsSection !== 'settings'
+          ? this.previousNonSettingsSection
+          : 'home';
+      this.openSection(target);
     }
   }
 
@@ -525,8 +535,24 @@ class PlacesTrackerClient {
     if (sec === 'colored_maps' || sec === 'us_parks') {
       sec = 'visited_map';
     }
+    if (sec !== 'settings') {
+      this.previousNonSettingsSection = sec;
+    } else if (!this.previousNonSettingsSection && this.activeSection && this.activeSection !== 'settings') {
+      this.previousNonSettingsSection = this.activeSection;
+    }
     this.activeSection = sec;
     sessionStorage.setItem('places_active_section', sec);
+
+    const settingsBtn = document.getElementById('top-settings-btn');
+    if (settingsBtn) {
+      if (sec === 'settings') {
+        settingsBtn.className =
+          'w-9 h-9 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/50 flex items-center justify-center text-sm transition';
+      } else {
+        settingsBtn.className =
+          'w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-white/10 flex items-center justify-center text-sm transition';
+      }
+    }
 
     if (homeCat) {
       this.homeCategory = homeCat;

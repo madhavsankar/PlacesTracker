@@ -755,11 +755,19 @@ class TestPlacesTrackerSuite(unittest.TestCase):
               const drawerOpenAfter = !document.getElementById('nav-drawer').classList.contains('hidden');
               const sectionAfterDrawerClose = client.activeSection;
 
+              // Clicking Settings button once opens 'settings'; clicking Settings button again closes it back to 'visited_map'
+              client.toggleSettingsDrawer();
+              const sectionAfterSettingsClick1 = client.activeSection;
+              client.toggleSettingsDrawer();
+              const sectionAfterSettingsClick2 = client.activeSection;
+
               const out = JSON.stringify({
                 drawerOpenBefore,
                 backHandled,
                 drawerOpenAfter,
-                sectionAfterDrawerClose
+                sectionAfterDrawerClose,
+                sectionAfterSettingsClick1,
+                sectionAfterSettingsClick2
               });
               if (typeof console !== 'undefined' && console.log) console.log(out);
               else if (typeof print !== 'undefined') print(out);
@@ -771,6 +779,8 @@ class TestPlacesTrackerSuite(unittest.TestCase):
         self.assertTrue(res["backHandled"])
         self.assertFalse(res["drawerOpenAfter"])
         self.assertEqual(res["sectionAfterDrawerClose"], "visited_map")
+        self.assertEqual(res["sectionAfterSettingsClick1"], "settings")
+        self.assertEqual(res["sectionAfterSettingsClick2"], "visited_map")
         self.assertIn("now - this.lastLongPressAt < 650", app_js)
         self.assertIn("this.suppressClickUntil = now + 550", app_js)
         self.assertIn("Date.now() < this.suppressClickUntil", app_js)

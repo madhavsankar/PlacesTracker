@@ -19,7 +19,7 @@
   <!-- Top App Bar (Places Been Style: Hamburger Left, Active View Title, Sync/Settings Right) -->
   <header class="sticky top-0 z-30 bg-[#0b0f19]/95 backdrop-blur-md border-b border-white/10 px-3 sm:px-6 h-13 flex items-center justify-between gap-2 py-2.5">
     <div class="flex items-center gap-2.5 min-w-0">
-      <button type="button" onclick="app.toggleNavDrawer(true)" title="Menu" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 text-slate-100 border border-white/10 flex items-center justify-center text-lg shrink-0">
+      <button type="button" onclick="app.toggleNavDrawer()" title="Menu" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 text-slate-100 border border-white/10 flex items-center justify-center text-lg shrink-0">
         ☰
       </button>
       <div class="min-w-0">
@@ -36,7 +36,7 @@
       <button type="button" onclick="app.refreshApp()" title="Sync & Refresh App" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-emerald-300 border border-white/10 flex items-center justify-center text-sm">
         ↻
       </button>
-      <button type="button" onclick="app.openSection('settings')" title="Settings" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-white/10 flex items-center justify-center text-sm">
+      <button type="button" id="top-settings-btn" onclick="app.toggleSettingsDrawer()" title="Settings" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-white/10 flex items-center justify-center text-sm transition">
         ⚙️
       </button>
     </div>
@@ -100,7 +100,7 @@
           <button type="button" onclick="app.toggleNavDrawer(false); app.refreshApp()" class="drawer-item w-full px-4 py-2.5 flex items-center gap-3 text-left text-xs font-medium text-slate-200 hover:bg-white/5">
             <span class="text-base w-5 text-center">☁️</span><span>Backup &amp; Sync Now</span>
           </button>
-          <button type="button" onclick="app.openSection('settings')" class="drawer-item w-full px-4 py-2.5 flex items-center gap-3 text-left text-xs font-medium text-slate-200 hover:bg-white/5">
+          <button type="button" onclick="app.toggleSettingsDrawer()" class="drawer-item w-full px-4 py-2.5 flex items-center gap-3 text-left text-xs font-medium text-slate-200 hover:bg-white/5">
             <span class="text-base w-5 text-center">⚙️</span><span>Settings</span>
           </button>
         </div>
